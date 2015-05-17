@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Albion
 {
@@ -38,6 +40,34 @@ namespace Albion
         public string ID { get { return this.id; } set { this.id = value; } }
     }
 
+    /// <summary>
+    /// Convert the string value using the specified converter.
+    /// The converter must accept a string and should return the parameter type
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+    public class AConvertAttribute : Attribute
+    {
+        public AConvertAttribute(string methodname) 
+        {
+            MethodName = methodname;
+        }
+
+        public string MethodName { get; protected set; }
+
+        protected Type converters = typeof(Convert);
+        public Type Converter { get { return converters; } set { converters = value; } }
+
+        public MethodInfo ConvertMethod
+        {
+            get
+            {
+                MethodInfo r = Converter.GetMethods().First(x => x.Name == MethodName && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == typeof(string));
+                if (r == null) throw new Exception("The specified method does not exist.");
+                else return r;
+            }
+        }
+    }
+
     public class Answer
     {
         public string ID { get; set; }
@@ -47,7 +77,7 @@ namespace Albion
         public Exception Error { get; set; }
         private MethodInfo Infos { get; set; }
         public string ExtensionID { get; set; }
-        private dynamic[] Parameters { get; set; }
+        private Dictionary<string, string> Parameters { get; set; }
 
         public Answer(Exception err)
         {
@@ -61,7 +91,7 @@ namespace Albion
             ID = null;
         }
 
-        public Answer(MethodInfo info, dynamic[] pa, int i)
+        public Answer(MethodInfo info, Dictionary<string, string> pa, int i)
         {
             Returns = info.ReturnType;
             Infos = info;
@@ -79,17 +109,20 @@ namespace Albion
         /// <returns>What the method returns (this.Returns)</returns>
         public object Call()
         {
-            return Infos.Invoke(null, Parameters);
-        }
-
-        /// <summary>
-        /// Call the non-static method using a defined object.
-        /// </summary>
-        /// <param name="obj">A defined class used to call the non-static method.</param>
-        /// <returns>What the method returns (this.Returns)</returns>
-        public object Call(object obj)
-        {
-            return Infos.Invoke(obj, Parameters);
+            List<dynamic> param = new List<dynamic>();
+            foreach (var i in Infos.GetParameters())
+            {
+                bool isCustom = false;
+                foreach (var o in i.GetCustomAttributes(typeof(AConvertAttribute), false))
+                {
+                    isCustom = true;
+                    AConvertAttribute a = o as AConvertAttribute;
+                    if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
+                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
+                }
+                if (!isCustom) param.Add(Parameters[i.Name]);
+            }
+            return Infos.Invoke(null, param.ToArray());
         }
     }
 
@@ -97,16 +130,25 @@ namespace Albion
     {
         private List<Type> Extensions { get; set; }
 
+        /// <summary>
+        /// Initialize an Albion Engine, used to translate commands.
+        /// </summary>
         public Engine()
         {
             Extensions = new List<Type>();
         }
 
+        /// <summary>
+        /// Add the specified extensions to this instance of Albion.
+        /// </summary>
+        /// <param name="ts">Types of classes (must have the Extension Attribute)</param>
+        /// <returns>The number of added extensions</returns>
         public int AddExtensions(params Type[] ts)
         {
+            int extensions = Extensions.Count;
             foreach (Type t in ts)
                 if (t.GetCustomAttributes(typeof(ExtensionAttribute), false).Length == 1 && t.IsClass) Extensions.Add(t);
-            return Extensions.Count;
+            return Extensions.Count - extensions;
         }
 
         /// <summary>
@@ -136,12 +178,30 @@ namespace Albion
             int _test = 0;
             foreach (string s in p)
             {
-                MatchCollection one = Regex.Matches(s, @"{[\w\d:]+}|([\w\s\d]+)");
+                MatchCollection one = Regex.Matches(s, @"{[\w\d:]+}|([\w\s\d'-]+)");
 
                 string reg = "";
                 foreach (Match m in one) if (!reg.EndsWith(m.Value) && !m.Value.EndsWith("}")) reg += m.Value + "|";
                 reg = reg.Substring(0, reg.Length - 1);
 
+                if (!reg.Contains("|"))
+                {
+                    if (reg.ToLower() != input.ToLower()) continue;
+                    else 
+                    {
+                        Sentence esentence = new Sentence(type, input, s, new Dictionary<string, string>(0));
+                        var emethod = esentence.Method;
+                        if (emethod == null) continue;
+                        else
+                        {
+                            int e__test = _test;
+                            _test++;
+                            Dictionary<string, string> vs = new Dictionary<string, string>(0);
+
+                            return new Answer(emethod, vs, e__test);
+                        }
+                    };
+                }
                 if (Regex.Replace(input, ".*?" + reg.Replace("|", ".*?") + ".*", "").Trim() != "") 
                     continue;
 
@@ -160,20 +220,20 @@ namespace Albion
                 int __test = _test;
                 _test++;
 
-                var method = sentence.FindMethod();
+                var method = sentence.Method;
                 if (method == null) continue;
                 else
                 {
                     if (method.GetParameters().Length != sentence.Variables.Count)
                         continue;
-                    List<dynamic> l = new List<dynamic>();
-                    Dictionary<string, dynamic> vs = sentence.Variables.ToDictionary(x => Regex.Replace(x.Key, ":.+", ""), x => x.Value);
+                    List<string> l = new List<string>();
+                    Dictionary<string, string> vs = sentence.Variables.ToDictionary(x => Regex.Replace(x.Key, ":.+", ""), x => x.Value);
 
                     foreach (var pa in method.GetParameters())
                         if (vs.ContainsKey(pa.Name)) l.Add(vs[pa.Name]);
                         else continue;
                     if (l.Count != vs.Count) continue;
-                    return new Answer(method, l.ToArray<dynamic>(), __test);
+                    return new Answer(method, vs, __test);
                 }
             }
 
@@ -189,18 +249,18 @@ namespace Albion
         {
             Full = full;
             Template = template;
-            Variables = new Dictionary<string, dynamic>();
+            Variables = variables;
             Ty = type;
-
-            foreach (var v in variables) Variables.Add(v.Key, (v.Key.Contains(":")) ? Convert.All(v.Key, v.Value) : v.Value);
+            Method = FindMethod();
         }
 
-        public string Full { get; set; }
-        public string Template { get; set; }
-        public Dictionary<string, dynamic> Variables { get; set; }
+        public string Full { get; private set; }
+        public string Template { get; private set; }
+        public Dictionary<string, string> Variables { get; private set; }
         private Type Ty { get; set; }
+        public MethodInfo Method { get; private set; }
 
-        public MethodInfo FindMethod()
+        private MethodInfo FindMethod()
         {
             foreach (var i in Ty.GetMethods())
                 foreach (var o in i.GetCustomAttributes(typeof(SentenceAttribute), false))
@@ -227,11 +287,11 @@ namespace Albion
             string tt = Regex.Replace(v, ".*?:", "").ToUpper().ToCharArray()[0] + Regex.Replace(v, ".*?:", "").ToLower().Substring(1);
 
             var m = typeof(Convert).GetMethod(tt);
-            if (m == null) throw new Exception("The converting method '" + tt + "' doesn't exist.");
+            if (m == null) throw new Exception("The method '" + tt + "' doesn't exist.");
             else return m.Invoke(null, new string[] { r });
         }
 
-        private static int? Digit(string w)
+        private static int Digit(string w)
         {
             w = w.Replace("fort", "fourt").Replace("nint", "ninet");
             List<string> s = w.Split(new string[1] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -246,15 +306,15 @@ namespace Albion
                 { "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen" };
 
             if (exc.IndexOf(w) >= 0) return exc.IndexOf(w) + 10;
-            else if (s.Count > 2 || s.Count < 1) return null;
+            else if (s.Count > 2 || s.Count < 1) return -1;
             else if (s.Count == 1)
             {
                 if (ii.IndexOf(s[0]) > -1) s.Add("zero");
                 else if (i.IndexOf(s[0]) > -1) s.Insert(0, "o");
-                else return null;
+                else return -1;
             }
 
-            int? iii = Int32.Parse(ii.IndexOf(s[0]).ToString() + i.IndexOf(s[1]).ToString());
+            int iii = Int32.Parse(ii.IndexOf(s[0]).ToString() + i.IndexOf(s[1]).ToString());
 
             return iii;
         }
@@ -264,7 +324,7 @@ namespace Albion
         /// </summary>
         /// <param name="s">A string that'll be filtered.</param>
         /// <returns>null if incorrect format, or the int corresponding</returns>
-        public static int? Number(string s)
+        public static int Number(string s)
         {
             // extract the number
             s = Regex.Replace(s, @"[^a-zA-Z\s]", " ").ToLower();
@@ -280,11 +340,11 @@ namespace Albion
 
             splitted = s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (splitted.Length == 0) return null;
+            if (splitted.Length == 0) return -1;
             if (splitted.Count(x => x == "zero") > 0)
-                if (splitted.Count(x => x == "zero") > 1) return null;
-                else if (splitted.Length > 1) return null;
-            if (splitted.Count(x => x == "hundred") > 2 || splitted.Count(x => x == "thousand") > 1) return null;
+                if (splitted.Count(x => x == "zero") > 1) return -1;
+                else if (splitted.Length > 1) return -1;
+            if (splitted.Count(x => x == "hundred") > 2 || splitted.Count(x => x == "thousand") > 1) return -1;
 
             MatchCollection m = Regex.Matches(s, @"(?<ht>.*?)hundred(?=.*thousand)|(?<th>.*?)thousand|(?<hu>.*?)hundred|(?<in>.+?)$");
 
@@ -297,12 +357,16 @@ namespace Albion
             var gin = m.Cast<Match>().Select(x => x.Groups["in"]).FirstOrDefault(y => y.Value != "");
             string _in = (gin == null) ? "" : gin.Value.Trim();
 
-            int hundredthousands = Digit(_ht) ?? (Regex.IsMatch(s, @"(?<ht>.*?)hundred(?=.*thousand)") ? 1 : 0);
-            int thousands = Digit(_th) ?? (s.Contains("thousand") ? 1 : 0);
-            int hundreds = Digit(_hu) ?? (s.Contains("hundred") ? 1 : 0);
-            int numbers = Digit(_in) ?? 0;
+            int hundredthousands = Digit(_ht);
+            hundredthousands = (hundredthousands == -1) ? (Regex.IsMatch(s, @"(?<ht>.*?)hundred(?=.*thousand)") ? 1 : 0) : hundredthousands;
+            int thousands = Digit(_th);
+            thousands = (thousands == -1) ? (Regex.IsMatch(s, "thousand") ? 1 : 0) : thousands;
+            int hundreds = Digit(_hu);
+            hundreds = (hundreds == -1) ? (Regex.IsMatch(s, @"hundred") ? 1 : 0) : hundreds;
+            int numbers = Digit(_in);
+            numbers = (numbers == -1) ? 0 : numbers;
 
-            return (hundredthousands * 100000) + (thousands * 1000) + (hundreds * 100) + (numbers);
+            return (hundredthousands * 100000) + (thousands * 1000) + (hundreds * 100) + (numbers) * (s.Contains("minus") ? -1 : 1);
         }
 
         private static string Digit(int i)
@@ -354,45 +418,5 @@ namespace Albion
             days += weeks * 7;
             return new TimeSpan(days, hours, minutes, 0);
         }
-
-        public static DateTime At(string r)
-        {
-            DateTime today = DateTime.Today;
-            DateTime now = DateTime.Now;
-            int form = (Regex.IsMatch(r, "past|to")) ? 0 : (Regex.IsMatch(r, "AM|PM")) ? 1 : 2;
-            if (form == 0) // Half past two/Ten to twelve
-            {
-                Match matches = Regex.Match(r, @"");
-
-            }
-            else if (form == 1) // AM / PM
-            {
-                Match matches = Regex.Match(r, @"");
-
-            }
-            else // 24h format
-            {
-                Match matches = Regex.Match(r, @"");
-
-            }
-            return today;
-        }
     }
-
-    //[Extension(ID = "010")]
-    //static class AlbionTest
-    //{
-    //    [Sentence("In {time:in} remind me to {todo}", Converters = true)]
-    //    [Sentence("Remind me to {todo} in {time:in}", Converters = true)]
-    //    public static string RemindMeIn(string todo, TimeSpan time)
-    //    {
-    //        DateTime remindtime = DateTime.Now;
-    //        remindtime = remindtime.Add(time);
-    //        int? milkshakes = Albion.Convert.Number("I will need four hundred and ninty nine thousand, five hundred and sixty-eight milkshakes");
-    //        // milkshakes = 409568
-    //        return "I will remind you to " + todo + " "
-    //                + remindtime.DayOfWeek + ", the " + remindtime.Day + "th of " + remindtime.ToString("MMM yyyy")
-    //                + ", at " + remindtime.ToString("HH:mm") + ".";
-    //    }
-    //}
 }
