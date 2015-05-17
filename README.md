@@ -92,3 +92,9 @@ Some converters are included in Albion.Converters, but you can add your own if y
     
     public static string Convert([AConvert("Number", Converter = typeof(Maths))]int number) { ... }
     // Will use Maths.Number(string) if it exists. If it doesn't, throws an exception.
+
+### TODO:
+- Improve the filtering RegEx
+- Improve performances
+- Fix some bugs; improve exceptions
+- Add support for {var} {var}
