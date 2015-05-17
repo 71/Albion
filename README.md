@@ -7,9 +7,9 @@
 
 #### with:
 <!-- language: c# -->
-    [Sentence("In {time:in} remind me to {todo}")]
-    [Sentence("Remind me to {todo} in {time:in}")]
-    public static string RemindMeIn(string todo, TimeSpan time)
+    [Sentence("In {time} remind me to {todo}")]
+    [Sentence("Remind me to {todo} in {time}")]
+    public static string RemindMeIn(string todo, [AConvert("In")]TimeSpan time)
     {
         DateTime remindtime = DateTime.Now;
         remindtime = remindtime.Add(time);
@@ -36,25 +36,59 @@
     static class Reminders
     {
         [Sentence("Remind me to {todo}", ID = "010")]
-        public static string RemindMe(string todo)
-        { ... }
-        
-        ...
+        public static string RemindMe(string todo) { ... }
     }
+    
+    ...
     
     Engine e = new Engine();
     e.AddExtensions(typeof(Reminders));
     Answer a = e.Ex("Remind me to call mom in 12 minutes.");
     if (a.ExtensionID == "strings" && a.ID == "010")
         return (string)a.Call();
-    else
-        return null;
 #### Built for extensions
     [Extension]
     public static class Example
     { ... }
     new Albion().AddExtensions(typeof(Example));
-#### Easy syntax
-    Remind me to {todo} in {time:in}
-- **{todo}** and **{time:in}** are variables
-- **:in** means that the string *time* will be converter using Albion.Convert.In(string)
+#### Import extensions from PCLs on runtime if you want
+    // Since Xamarin doesn't support Assembly.Load*(), the following method isn't included in Albion.
+    public static void AddExtensionsFromFiles(this Albion.Engine engine, params string[] paths)
+    {
+        foreach (string path in paths)
+        {
+            Assembly a = Assembly.LoadFrom(path);
+            foreach (Type t in a.GetTypes())
+                if (t.IsClass && t.GetCustomAttribute(typeof(ExtensionAttribute)) != null) engine.AddExtensions(t);
+        }
+    }
+
+Usage :
+
+    // AlbionMaths.cs
+    [Extension(ID = "maths")]
+    public static class Special
+    {
+        [Sentence("{n} squared")]
+        public static int Squared([AConvert("Number")]int n)
+        {
+            return n * n;
+        }
+    }
+    
+    // Main.cs
+    Engine engine = new Engine();
+    engine.AddExtensionFromFile("AlbionMaths.dll");
+    Answer answer = engine.Ex("Sixteen squared");
+    int squared = (int)aa.Call();
+    
+    // Result: squared = 256
+#### Useful converters
+Some converters are included in Albion.Converters, but you can add your own if you want.
+
+    [Sentence("Convert {number} to an integer")]
+    public static string Convert([AConvert("Number")]int number) { ... }
+    // Will use Albion.Converters.Number(string).
+    
+    public static string Convert([AConvert("Number", Converter = typeof(Maths))]int number) { ... }
+    // Will use Maths.Number(string) if it exists. If it doesn't, throws an exception.
