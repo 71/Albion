@@ -94,7 +94,5 @@ Some converters are included in Albion.Converters, but you can add your own if y
     // Will use Maths.Number(string) if it exists. If it doesn't, throws an exception.
 
 ### TODO:
-- Improve the filtering RegEx
+- Language support
 - Improve performances
-- Fix some bugs; improve exceptions
-- Add support for {var} {var}
