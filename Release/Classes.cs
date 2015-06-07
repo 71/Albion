@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 
 namespace Albion
 {
-
     public class Answer
     {
         public string ID { get; set; }
@@ -17,6 +16,8 @@ namespace Albion
         private MethodInfo Infos { get; set; }
         public string ExtensionID { get; set; }
         private Dictionary<string, string> Parameters { get; set; }
+        private Sentence _s { get; set; }
+        private object Base { get; set; }
 
         public Answer(Exception err)
         {
@@ -27,6 +28,8 @@ namespace Albion
             Parameters = null;
             ExtensionID = null;
             ID = null;
+            _s = null;
+            Base = null;
         }
 
         public Answer(Sentence s, Dictionary<string, string> pa)
@@ -38,6 +41,8 @@ namespace Albion
             ID = s.Attr.ID;
             Error = null;
             Failed = false;
+            _s = s;
+            Base = s.Base;
         }
 
         /// <summary>
@@ -53,7 +58,8 @@ namespace Albion
             {
                 ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
 
-                if (a == null) param.Add(Parameters[i.Name]);
+                if (a == null && i.ParameterType == typeof(Sentence)) param.Add(_s);
+                else if (a == null) param.Add(Parameters[i.Name]);
                 else if (a.MethodName == "Auto")
                     param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
                 else if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
@@ -62,7 +68,7 @@ namespace Albion
 
             try
             {
-                return Infos.Invoke(null, param.ToArray());
+                return Infos.Invoke(Base, param.ToArray());
             }
             catch (Exception e)
             {
@@ -91,24 +97,40 @@ namespace Albion
             Description = descr;
             Sentence = tested;
         }
-
+        
         public string Full { get; set; }
         public string[] Result { get; set; }
         public string Matched { get; set; }
         public string Input { get; set; }
         public string Description { get; set; }
         public string Sentence { get; set; }
+
+        public override string ToString()
+        {
+            return this.Full;
+        }
     }
 
     public class Sentence
     {
-        public Sentence(MethodInfo m, SentenceAttribute a)
+        public Sentence(MethodInfo m, SentenceAttribute a, int i)
         {
-            Template = a.Sentence;
+            Template = a.Sentence[i];
             Method = m;
             Attr = a;
             ExAttr = (ExtensionAttribute)m.DeclaringType.GetCustomAttributes(typeof(ExtensionAttribute), true).First();
             Variables = Regex.Matches(Template, @"{[\d\w]+}").Cast<Match>().Select(x => x.Value.Substring(1, x.Value.Length - 2));
+            Base = null;
+        }
+
+        public Sentence(MethodInfo m, SentenceAttribute a, int i, object b)
+        {
+            Template = a.Sentence[i];
+            Method = m;
+            Attr = a;
+            ExAttr = (ExtensionAttribute)m.DeclaringType.GetCustomAttributes(typeof(ExtensionAttribute), true).First();
+            Variables = Regex.Matches(Template, @"{[\d\w]+}").Cast<Match>().Select(x => x.Value.Substring(1, x.Value.Length - 2));
+            Base = b;
         }
 
         public string Template { get; private set; }
@@ -116,6 +138,12 @@ namespace Albion
         public SentenceAttribute Attr { get; private set; }
         public ExtensionAttribute ExAttr { get; private set; }
         public IEnumerable<string> Variables { get; private set; }
+        public object Base { get; private set; }
+
+        public override string ToString()
+        {
+            return this.Template;
+        }
     }
 
 
@@ -123,13 +151,13 @@ namespace Albion
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class SentenceAttribute : Attribute
     {
-        public SentenceAttribute(string FormattedSentence)
+        public SentenceAttribute(params string[] FormattedSentence)
         {
             this.sentence = FormattedSentence;
         }
 
-        protected string sentence;
-        public string Sentence { get { return this.sentence; } }
+        protected string[] sentence;
+        public string[] Sentence { get { return this.sentence; } }
 
         protected string id = "";
         public string ID { get { return this.id; } set { this.id = value; } }

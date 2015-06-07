@@ -8,7 +8,6 @@ namespace Albion
 {
     public class Engine
     {
-        private List<Type> Extensions { get; set; }
         private Stack<Sentence> Sentences { get; set; }
         private string Language { get; set; }
 
@@ -17,7 +16,6 @@ namespace Albion
         /// </summary>
         public Engine(string Lang)
         {
-            Extensions = new List<Type>();
             Sentences = new Stack<Sentence>();
             Language = Lang;
         }
@@ -27,40 +25,84 @@ namespace Albion
         /// </summary>
         public Engine()
         {
-            Extensions = new List<Type>();
             Sentences = new Stack<Sentence>();
             Language = "en-US";
+        }
+
+        private string FilterForRegex(string s)
+        {
+            string _s = "";
+            HashSet<char> filter = new HashSet<char>() { '.', '\\', '+', '-', '*', '?', '^', '$', '[', ']', '(', ')', '{', '}', '|', '/' };
+            foreach (char i in s.ToCharArray()) 
+            {
+                if (filter.Contains(i)) _s += "\\";
+                _s += i;
+            }
+            return _s;
         }
 
         /// <summary>
         /// Add the specified extensions to this instance of Albion.
         /// </summary>
         /// <param name="ts">Types of classes (must have the Extension Attribute)</param>
-        /// <returns>The number of extensions added.</returns>
+        /// <returns>The number of sentences added.</returns>
         public int Subscribe(params Type[] ts)
         {
-            int extensions = Extensions.Count;
+            int began = Sentences.Count;
             foreach (Type t in ts)
             {
                 if (t.GetCustomAttributes(typeof(ExtensionAttribute), false).Length > 1) throw new Exception("Only one Extension Attribute can be set.");
                 else if (t.GetCustomAttributes(typeof(ExtensionAttribute), false).Length < 1) throw new Exception("An Extension Attribute must be set.");
                 else if (!t.IsClass) throw new Exception("Only a class can be given.");
-                else if (!Extensions.Contains(t)) Extensions.Add(t);
 
                 foreach (var m in t.GetMethods())
                 {
+                    Sentence _s;
                     SentenceAttribute[] _as = (SentenceAttribute[])m.GetCustomAttributes(typeof(SentenceAttribute), true);
                     if (_as.Length > 0)
                         foreach (var a in _as)
                             if ((a.Language == Language) || (a.Language == "" && (t.GetCustomAttributes(typeof(ExtensionAttribute), true).First() as ExtensionAttribute).Language == Language))
-                                Sentences.Push(new Sentence(m, a));
+                                for (int i = 0; i < a.Sentence.Length; i++)
+                                    if (!Sentences.Contains(_s = new Sentence(m, a, i))) Sentences.Push(_s); else throw new Exception("The same sentence already exists in this Engine.");
                 }
             }
-            return Extensions.Count - extensions;
+            return Sentences.Count - began;
         }
 
+        /// <summary>
+        /// Add the specified extensions to this instance of Albion.
+        /// </summary>
+        /// <param name="ts">Types of classes (must have the Extension Attribute)</param>
+        /// <returns>The number of sentences added.</returns>
+        public int Subscribe<T>(T obj)
+        {
+            int began = Sentences.Count;
+            Type t = typeof(T);
+            if (t.GetCustomAttributes(typeof(ExtensionAttribute), true).Length > 1) throw new Exception("Only one Extension Attribute can be set.");
+            else if (t.GetCustomAttributes(typeof(ExtensionAttribute), true).Length < 1) throw new Exception("An Extension Attribute must be set.");
+            else if (!t.IsClass) throw new Exception("Only a class can be given.");
+
+            foreach (var m in t.GetMethods())
+            {
+                Sentence _s;
+                SentenceAttribute[] _as = (SentenceAttribute[])m.GetCustomAttributes(typeof(SentenceAttribute), true);
+                if (_as.Length > 0)
+                    foreach (var a in _as)
+                        if ((a.Language == Language) || (a.Language == "" && (t.GetCustomAttributes(typeof(ExtensionAttribute), true).First() as ExtensionAttribute).Language == Language))
+                            for (int i = 0; i < a.Sentence.Length; i++)
+                                if (!Sentences.Contains(_s = new Sentence(m, a, i, obj))) Sentences.Push(_s); else throw new Exception("The same sentence already exists in this Engine.");
+            }
+            return Sentences.Count - began;
+        }
+
+        /// <summary>
+        /// Returns an array of suggestions.
+        /// </summary>
+        /// <param name="s">An user input string</param>
+        /// <returns>An array of suggestions.</returns>
         public List<Suggestion> Suggest(string s)
         {
+            s = FilterForRegex(s);
             List<Suggestion> l = new List<Suggestion>();
 
             foreach (Sentence i in Sentences) 
@@ -81,6 +123,7 @@ namespace Albion
         /// <returns>An answer containing either the method and informations, or an exception</returns>
         public Answer Ask(string input)
         {
+            input = FilterForRegex(input);
             if (String.IsNullOrWhiteSpace(input)) return new Answer(new Exception("Empty input."));
             else if (input.Contains("{") || input.Contains("}")) return new Answer(new Exception("Unauthorized character(s): '{' and '}' are forbidden."));
             List<Answer> Possibilities = new List<Answer>();
@@ -110,7 +153,7 @@ namespace Albion
 
             if (Regex.Replace(input, ".*?" + reg.Replace("|", ".*?") + ".*", "", RegexOptions.IgnoreCase).Trim() != "") return null;
 
-            string r = Regex.Replace(input, reg, "{");
+            string r = Regex.Replace(input, reg, "{", RegexOptions.IgnoreCase);
             string[] matches = r.Split(new char[] { '{' }, StringSplitOptions.RemoveEmptyEntries);
 
             Dictionary<string, string> dic = new Dictionary<string, string>(matches.Length);
@@ -119,10 +162,12 @@ namespace Albion
             for (int i = 0; i < matches.Length; i++)
                 dic.Add(_matches[i], matches[i]);
 
-            var para = _s.Method.GetParameters();
-            if (para.Length != dic.Count) return null;
-
             return new Answer(_s, dic);
+        }
+
+        public void Reset()
+        {
+            Sentences = new Stack<Sentence>();
         }
     }
 }
