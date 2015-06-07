@@ -92,3 +92,10 @@ Some converters are included in Albion.Converters, but you can add your own if y
     
     public static string Convert([Converter("Number", Converter = typeof(Maths))]int number) { ... }
     // Will use Maths.Number(string) if it exists. If it doesn't, throws an exception.
+
+#### Language support
+`````csharp
+[Sentence("Hello", Language = "en-us")]
+public static SayHello() { }
+````
+*Note*: The language should be in [this](https://msdn.microsoft.com/en-us/library/ms533052\(v=vs.85\).aspx) format.
