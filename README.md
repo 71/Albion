@@ -9,7 +9,7 @@
 <!-- language: c# -->
     [Sentence("In {time} remind me to {todo}")]
     [Sentence("Remind me to {todo} in {time}")]
-    public static string RemindMeIn(string todo, [AConvert("In")]TimeSpan time)
+    public static string RemindMeIn(string todo, [Converter("In")]TimeSpan time)
     {
         DateTime remindtime = DateTime.Now;
         remindtime = remindtime.Add(time);
@@ -25,8 +25,8 @@
 ## Features:
 #### Easy to use
     Engine e = new Engine();
-    e.AddExtensions(typeof(Reminders));
-    Answer a = e.Ex("Remind me to call mom in 12 minutes.");
+    e.Subscribe(typeof(Reminders));
+    Answer a = e.Ask("Remind me to call mom in 12 minutes.");
     if (a.Failed)
         Console.WriteLine(a.Error);
     else
@@ -50,7 +50,7 @@
     [Extension]
     public static class Example
     { ... }
-    new Albion().AddExtensions(typeof(Example));
+    new Albion().Subscribe(typeof(Example));
 #### Import extensions from PCLs on runtime if you want
     // Since Xamarin doesn't support Assembly.Load*(), the following method isn't included in Albion.
     public static void AddExtensionsFromFiles(this Albion.Engine engine, params string[] paths)
@@ -59,7 +59,7 @@
         {
             Assembly a = Assembly.LoadFrom(path);
             foreach (Type t in a.GetTypes())
-                if (t.IsClass && t.GetCustomAttribute(typeof(ExtensionAttribute)) != null) engine.AddExtensions(t);
+                if (t.IsClass && t.GetCustomAttribute(typeof(ExtensionAttribute)) != null) engine.Subscribe(t);
         }
     }
 
@@ -70,7 +70,7 @@ Usage :
     public static class Special
     {
         [Sentence("{n} squared")]
-        public static int Squared([AConvert("Number")]int n)
+        public static int Squared([Converter("Number")]int n)
         {
             return n * n;
         }
@@ -79,7 +79,7 @@ Usage :
     // Main.cs
     Engine engine = new Engine();
     engine.AddExtensionFromFile("AlbionMaths.dll");
-    Answer answer = engine.Ex("Sixteen squared");
+    Answer answer = engine.Ask("Sixteen squared");
     int squared = (int)aa.Call();
     
     // Result: squared = 256
@@ -87,12 +87,8 @@ Usage :
 Some converters are included in Albion.Converters, but you can add your own if you want.
 
     [Sentence("Convert {number} to an integer")]
-    public static string Convert([AConvert("Number")]int number) { ... }
+    public static string Convert([Converter("Number")]int number) { ... }
     // Will use Albion.Converters.Number(string).
     
-    public static string Convert([AConvert("Number", Converter = typeof(Maths))]int number) { ... }
+    public static string Convert([Converter("Number", Converter = typeof(Maths))]int number) { ... }
     // Will use Maths.Number(string) if it exists. If it doesn't, throws an exception.
-
-### TODO:
-- Language support
-- Improve performances
