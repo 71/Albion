@@ -59,11 +59,17 @@ namespace Albion
                 ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
 
                 if (a == null && i.ParameterType == typeof(Sentence)) param.Add(_s);
-                else if (a == null) param.Add(Parameters[i.Name]);
-                else if (a.MethodName == "Auto")
-                    param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                else if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
-                    param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
+                else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
+                    param.Add(i.DefaultValue);
+                else
+                {
+                    if (!Parameters.ContainsKey(i.Name)) throw new Exception("Parameters don't match.");
+                    else if (a == null) param.Add(Parameters[i.Name]);
+                    else if (a.MethodName == "Auto")
+                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
+                    else if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
+                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
+                }
             }
 
             try
