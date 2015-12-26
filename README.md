@@ -26,9 +26,9 @@ public static string RemindMeIn(string todo, [Converter("In")]TimeSpan time)
 ## Features:
 #### Easy to use
 ````csharp
-Engine e = new Engine();
-e.Subscribe(typeof(Reminders));
-Answer a = e.Ask("Remind me to call mom in 12 minutes.");
+Engine albion = new Engine();
+albion.Subscribe(typeof(Reminders));
+Answer a = albion.Ask("Remind me to call mom in 12 minutes.");
 if (a.Failed)
     Console.WriteLine(a.Error);
 else
@@ -36,61 +36,27 @@ else
 ````
 #### You know what you do
 ````csharp
-[Extension(ID = "strings")]
-static class Reminders
+[Extension(ID = "reminders")]
+public static class Reminders
 {
-    [Sentence("Remind me to {todo}", ID = "010")]
+    [Sentence("Remind me to {todo}", ID = "simple")]
     public static string RemindMe(string todo) { ... }
 }
 
 ...
 
-Engine e = new Engine();
-e.AddExtensions(typeof(Reminders));
-Answer a = e.Ex("Remind me to call mom in 12 minutes.");
-if (a.ExtensionID == "strings" && a.ID == "010")
-    return (string)a.Call();
+Engine albion = new Engine();
+albion.Subscribe(typeof(Reminders));
+Answer a = albion.Ask("Remind me to call mom in 12 minutes.");
+if (a.ExAttr.ID == "reminders" && a.Returns == typeof(string))
+    return a.Call<string>();
 ````
 #### Built for extensions
 ````csharp
 [Extension]
 public static class Example
 { ... }
-new Albion().Subscribe(typeof(Example));
-````
-#### Import extensions from PCLs on runtime if you want
-````csharp
-// Since Xamarin doesn't support Assembly.Load*(), the following method isn't included in Albion.
-public static void AddExtensionsFromFiles(this Albion.Engine engine, params string[] paths)
-{
-    foreach (string path in paths)
-    {
-        Assembly a = Assembly.LoadFrom(path);
-        foreach (Type t in a.GetTypes())
-            if (t.IsClass && t.GetCustomAttribute(typeof(ExtensionAttribute)) != null) engine.Subscribe(t);
-    }
-}
-````
-Usage :
-````csharp
-// AlbionMaths.cs
-[Extension(ID = "maths")]
-public static class Special
-{
-    [Sentence("{n} squared")]
-    public static int Squared([Converter("Number")]int n)
-    {
-        return n * n;
-    }
-}
-    
-// Main.cs
-Engine engine = new Engine();
-engine.AddExtensionFromFile("AlbionMaths.dll");
-Answer answer = engine.Ask("Sixteen squared");
-int squared = (int)aa.Call();
-
-// Result: squared = 256
+albion.Subscribe(typeof(Example));
 ````
 #### Useful converters
 Some converters are included in Albion.Converters, but you can add your own if you want.
