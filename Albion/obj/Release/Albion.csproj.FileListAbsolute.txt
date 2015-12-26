@@ -1,0 +1,9 @@
+D:\Bytes\Git\Albion\Compiled\NET\Albion.dll
+D:\Bytes\Git\Albion\Compiled\NET\Albion.pdb
+D:\Bytes\Git\Albion\Albion\obj\Release\Albion.csprojResolveAssemblyReference.cache
+D:\Bytes\Git\Albion\Albion\obj\Release\Albion.dll
+D:\Bytes\Git\Albion\Albion\obj\Release\Albion.pdb
+D:\Bytes\Git\Albion\Compiled\NET\Release\Albion.dll
+D:\Bytes\Git\Albion\Compiled\NET\Release\Albion.pdb
+D:\Bytes\Git\Albion\Compiled\Release\Albion.dll
+D:\Bytes\Git\Albion\Compiled\Release\Albion.pdb
