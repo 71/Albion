@@ -75,4 +75,16 @@ namespace Albion
 
         public MethodInfo ConvertMethod { get; private set; }
     }
+
+    /// <summary>
+    /// Indicates that the following string will be a single word.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+    public class WordAttribute : Attribute
+    {
+        public WordAttribute()
+        {
+
+        }
+    }
 }
