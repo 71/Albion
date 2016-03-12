@@ -9,15 +9,13 @@ namespace Albion
 {
     public class Answer : IDisposable
     {
-        public string ID { get; private set; }
         public bool Failed { get; private set; }
         public Type Returns { get; private set; }
         public Exception Error { get; private set; }
         public bool IsAsync { get; private set; }
-        public string ExtensionID { get; private set; }
 
         private MethodInfo Infos { get; set; }
-        private Dictionary<string, string> Parameters { get; set; }
+        private Dictionary<string, object> Parameters { get; set; }
         private Sentence _s { get; set; }
         private object Base { get; set; }
 
@@ -28,25 +26,42 @@ namespace Albion
             Returns = null;
             Infos = null;
             Parameters = null;
-            ExtensionID = null;
-            ID = null;
             _s = null;
             Base = null;
             IsAsync = false;
         }
 
-        internal Answer(Sentence s, Dictionary<string, string> pa)
+        internal Answer(Sentence s, Dictionary<string, object> pa)
 		{
 			IsAsync = s.Method.ReturnType.FullName.StartsWith("System.Threading.Tasks.Task");
 			Returns = IsAsync ? s.Method.ReturnType.GenericTypeArguments[0] : s.Method.ReturnType;
             Infos = s.Method;
             Parameters = pa;
-            ExtensionID = s.ExAttr.ID;
-            ID = s.Attr.ID;
             Error = null;
             Failed = false;
             _s = s;
             Base = s.Base;
+        }
+
+        private List<dynamic> GetParameters()
+        {
+            List<dynamic> param = new List<dynamic>();
+
+            foreach (var i in Infos.GetParameters())
+            {
+                ConverterAttribute a = i.GetCustomAttribute<ConverterAttribute>(true);
+
+                if (i.ParameterType == typeof(Sentence))
+                    param.Add(_s);
+                else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
+                    param.Add(i.DefaultValue);
+                else if (!Parameters.ContainsKey(i.Name))
+                    throw new Exception("Parameters don't match");
+                else
+                    param.Add(Parameters[i.Name]);
+            }
+
+            return param;
         }
 
         /// <summary>
@@ -62,27 +77,7 @@ namespace Albion
 			else if (IsAsync)
 				return CallAsync<T> ().GetAwaiter ().GetResult ();
 
-            List<dynamic> param = new List<dynamic>();
-            foreach (var i in Infos.GetParameters())
-            {
-                ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
-
-                if (a == null && i.ParameterType == typeof(Sentence))
-                    param.Add(_s);
-                else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
-                    param.Add(i.DefaultValue);
-                else
-                {
-                    if (!Parameters.ContainsKey(i.Name))
-                        throw new Exception("Parameters don't match.");
-                    else if (a == null)
-                        param.Add(Parameters[i.Name]);
-                    else if (a.MethodName == "Auto")
-                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                    else if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
-                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                }
-            }
+            List<dynamic> param = GetParameters();
 
             try
             {
@@ -104,22 +99,7 @@ namespace Albion
 				throw new InvalidCastException ();
             else
             {
-                List<object> param = new List<object>();
-                foreach (var i in Infos.GetParameters())
-                {
-                    ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
-
-                    if (i.ParameterType == typeof(Sentence))
-                        param.Add(_s);
-                    else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
-                        param.Add(i.DefaultValue);
-					else if (!Parameters.ContainsKey(i.Name))
-						throw new Exception("Parameters don't match.");
-                    else if (a == null)
-                        param.Add(Parameters[i.Name]);
-                    else if (a.MethodName == "Auto" || (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType))
-                    	param.Add(a.ConvertMethod.Invoke(null, new string[] { Parameters[i.Name] }));
-                }
+                List<object> param = GetParameters();
 
                 try
                 {
@@ -144,26 +124,8 @@ namespace Albion
 				throw Error;
 			else if (IsAsync)
 				return CallAsync ().GetAwaiter ().GetResult ();
-			
-            List<dynamic> param = new List<dynamic>();
-            foreach (var i in Infos.GetParameters())
-            {
-                ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
 
-                if (a == null && i.ParameterType == typeof(Sentence))
-                    param.Add(_s);
-                else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
-                    param.Add(i.DefaultValue);
-                else
-                {
-                    if (!Parameters.ContainsKey(i.Name)) throw new Exception("Parameters don't match.");
-                    else if (a == null) param.Add(Parameters[i.Name]);
-                    else if (a.MethodName == "Auto")
-                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                    else if (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType)
-                        param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                }
-            }
+            List<dynamic> param = GetParameters();
 
             try
             {
@@ -181,25 +143,7 @@ namespace Albion
             else if (!IsAsync) return Call();
             else
             {
-                List<object> param = new List<object>();
-                foreach (var i in Infos.GetParameters())
-                {
-                    ConverterAttribute a = (ConverterAttribute)i.GetCustomAttributes(typeof(ConverterAttribute), true).FirstOrDefault();
-
-                    if (a == null && i.ParameterType == typeof(Sentence))
-                        param.Add(_s);
-                    else if (i.IsOptional && !Parameters.ContainsKey(i.Name))
-                        param.Add(i.DefaultValue);
-                    else
-                    {
-                        if (!Parameters.ContainsKey(i.Name))
-                            throw new Exception("Parameters don't match.");
-                        else if (a == null)
-                            param.Add(Parameters[i.Name]);
-                        else if (a.MethodName == "Auto" || (a.ConvertMethod != null && a.ConvertMethod.ReturnType == i.ParameterType))
-                            param.Add(a.ConvertMethod.Invoke(null, new string[1] { Parameters[i.Name] }));
-                    }
-                }
+                List<object> param = GetParameters();
 
                 try
                 {
@@ -218,9 +162,7 @@ namespace Albion
             this._s = null;
             this.Base = null;
             this.Error = new ObjectDisposedException("answer");
-            this.ExtensionID = null;
             this.Failed = true;
-            this.ID = null;
             this.Infos = null;
             this.IsAsync = false;
             this.Parameters = null;

@@ -9,32 +9,30 @@ namespace Albion
 {
     public class Sentence
     {
-        internal Sentence(MethodInfo m, SentenceAttribute a, int i)
+        internal Sentence(MethodInfo m, SentenceAttribute a, int i, object b = null)
         {
-            Template = a.Sentence[i];
+            var ex = m.DeclaringType.GetTypeInfo().GetCustomAttribute<ExtensionAttribute>();
+
+            Base = b;
             Method = m;
-            Attr = a;
-            ExAttr = (ExtensionAttribute)m.DeclaringType.GetTypeInfo().GetCustomAttribute<ExtensionAttribute>();
             Variables = Regex.Matches(Template, @"{[\d\w]+}").Cast<Match>().Select(x => x.Value.Substring(1, x.Value.Length - 2));
-            Base = null;
+            Template = a.Sentence[i];
+
+            Language = a.Language == "" ? ex.Language : a.Language;
+            SentenceID = a.ID;
+            ExtensionID = ex.ID;
+            Description = a.Description;
         }
 
-        internal Sentence(MethodInfo m, SentenceAttribute a, int i, object b)
-        {
-            Template = a.Sentence[i];
-            Method = m;
-            Attr = a;
-            ExAttr = (ExtensionAttribute)m.DeclaringType.GetTypeInfo().GetCustomAttribute<ExtensionAttribute>();
-            Variables = Regex.Matches(Template, @"{[\d\w]+}").Cast<Match>().Select(x => x.Value.Substring(1, x.Value.Length - 2));
-            Base = b;
-        }
+        internal object Base { get; private set; }
+        internal MethodInfo Method { get; private set; }
+        internal IEnumerable<string> Variables { get; private set; }
 
         public string Template { get; private set; }
-        public MethodInfo Method { get; private set; }
-        public SentenceAttribute Attr { get; private set; }
-        public ExtensionAttribute ExAttr { get; private set; }
-        public IEnumerable<string> Variables { get; private set; }
-        public object Base { get; private set; }
+        public string Language { get; private set; }
+        public string SentenceID { get; private set; }
+        public string ExtensionID { get; private set; }
+        public string Description { get; private set; }
 
         public override string ToString()
         {
