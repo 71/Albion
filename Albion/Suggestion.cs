@@ -42,7 +42,7 @@ namespace Albion
 
             string full = type == SuggestionMatchType.Description
                 ? parser.Attribute.Description
-                : String.Join("", parser.Tokens.Select(x => x.RandomExample()));
+                : parser.Full;
 
             Before = "";
             Match = "";

@@ -17,6 +17,7 @@ namespace Albion.Parsers
         public List<string> ParametersName { get; private set; }
         public MethodInfo Method { get; private set; }
         public SentenceAttribute Attribute { get; private set; }
+        public string Full { get { return string.Join("", Tokens.Select(x => x.RandomExample())); } }
 
         private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr)
         {
@@ -335,6 +336,11 @@ namespace Albion.Parsers
             }
 
             return new Tuple<List<IParser>, List<string>>(parsers, names);
+        }
+
+        public override string ToString()
+        {
+            return Full;
         }
     }
 }
