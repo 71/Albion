@@ -14,9 +14,8 @@ namespace Albion.Parsers
         {
             get
             {
-                yield return "the 21th of October 2016";
-                yield return "tomorrow";
-                yield return "in a week and twenty-three days";
+                yield return "2 days";
+                yield return "a week and twenty-three days";
             }
         }
 

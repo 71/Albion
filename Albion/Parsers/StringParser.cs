@@ -10,7 +10,15 @@ namespace Albion.Parsers
     [Parser]
     public class StringParser : TypeParser<string>
     {
-        public override IEnumerable<string> Examples { get { yield return "hello"; } }
+        public override IEnumerable<string> Examples
+        {
+            get
+            {
+                yield return "world";
+                yield return "eat";
+                yield return "shower";
+            }
+        }
 
         protected override bool TryParse(string s, out string res)
         {

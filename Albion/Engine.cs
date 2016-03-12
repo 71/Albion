@@ -53,6 +53,7 @@ namespace Albion
         {
             Sentences = new Stack<SentenceParser>();
             Language = lang;
+            Objects = new Dictionary<Type, object>();
         }
 
         public void Register(params Type[] extensions)
@@ -69,8 +70,10 @@ namespace Albion
             }
         }
 
-        public void Register<T>(T obj)
+        public void Register<T>(ref T obj)
         {
+            Objects.Add(typeof(T), obj);
+
             foreach (MethodInfo method in typeof(T).GetRuntimeMethods())
             {
                 var parsers = SentenceParser.Generate(method);
@@ -99,8 +102,9 @@ namespace Albion
             {
                 Answer answer;
                 Dictionary<string, object> parsedVars = new Dictionary<string, object>();
+                object invoker = Objects.ContainsKey(sentence.Item1.Method.DeclaringType) ? Objects[sentence.Item1.Method.DeclaringType] : null;
 
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
+                if (sentence.Item1.TryFinaleParse(sentence.Item3, invoker, out answer))
                 {
                     yield return new Answer<T>(answer);
                 }
@@ -126,8 +130,9 @@ namespace Albion
             {
                 Answer answer;
                 Dictionary<string, object> parsedVars = new Dictionary<string, object>();
+                object invoker = Objects.ContainsKey(sentence.Item1.Method.DeclaringType) ? Objects[sentence.Item1.Method.DeclaringType] : null;
 
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
+                if (sentence.Item1.TryFinaleParse(sentence.Item3, invoker, out answer))
                 {
                     yield return answer;
                 }
@@ -158,19 +163,38 @@ namespace Albion
 
         public IEnumerable<Suggestion> Suggest(string s)
         {
-            return Suggest(s, Language);
+            return Suggest(s, false, Language);
         }
 
         public IEnumerable<Suggestion> Suggest(string s, string lang)
         {
+            return Suggest(s, false, lang);
+        }
+
+        public IEnumerable<Suggestion> Suggest(string s, bool searchDescr)
+        {
+            return Suggest(s, searchDescr, Language);
+        }
+
+        public IEnumerable<Suggestion> Suggest(string s, bool searchDescr, string lang)
+        {
+            Dictionary<Suggestion, int> suggs = new Dictionary<Suggestion, int>();
+
             foreach (SentenceParser sentence in Sentences.Where(x => x.Attribute.Language == lang))
             {
-                Suggestion sugg = null;
-                if (sentence.TrySuggest(s, out sugg))
+                Suggestion sugg;
+                int coeff;
+                if ((coeff = sentence.Suggest(s, out sugg)) > 0)
                 {
-                    yield return sugg;
+                    suggs.Add(sugg, coeff);
+                }
+                else if (sentence.Attribute.Description.Contains(s.ToLower()))
+                {
+                    suggs.Add(new Suggestion(sentence, s, SuggestionMatchType.Description), 0);
                 }
             }
+
+            return suggs.OrderByDescending(x => x.Value).Select(x => x.Key);
         }
         
         private static void PrepareString(ref string s)

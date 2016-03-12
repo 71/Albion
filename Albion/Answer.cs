@@ -64,7 +64,7 @@ namespace Albion
 
         internal Answer(MethodInfo method, object[] parameters, object invoker = null)
         {
-            IsAsync = method.ReturnType.FullName.StartsWith("System.Threading.Tasks.Task`");
+            IsAsync = method.ReturnType.FullName.StartsWith("System.Threading.Tasks.Task`1");
             ReturnType = IsAsync ? method.ReturnType.GenericTypeArguments[0] : method.ReturnType;
             Method = method;
             Parameters = parameters;

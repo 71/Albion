@@ -37,10 +37,6 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Answer.cs" />
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\ParserAttribute.cs" />

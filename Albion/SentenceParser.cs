@@ -11,7 +11,7 @@ namespace Albion.Parsers
 {
     internal class SentenceParser
     {
-        public Type Returns { get; private set; }
+        public Type ReturnType { get; private set; }
         public ParameterInfo[] Parameters { get; private set; }
         public List<IParser> Tokens { get; private set; }
         public List<string> ParametersName { get; private set; }
@@ -24,53 +24,153 @@ namespace Albion.Parsers
             ParametersName = names;
             Parameters = info.GetParameters();
             Tokens = tokens;
-            Returns = info.ReturnType;
+            ReturnType = info.ReturnType;
             Attribute = attr;
         }
 
-        internal bool TrySuggest(string input, out Suggestion sugg)
+        internal int Suggest(string input, out Suggestion sugg)
         {
             sugg = null;
-            
-            string test = input;
-            List<string> suggestions = new List<string>();
 
-            int index = 0;
-            foreach (IParser token in Tokens)
+            int coeff = 0;
+            string test = input.ToLower();
+
+            foreach (StaticStringParser token in Tokens.OfType<StaticStringParser>())
             {
-                index++;
-                object o;
-
-                while (!token.TryParse(test, out o) && !string.IsNullOrWhiteSpace(test))
+                if (token.Reference.Contains(test))
                 {
-                    int del = 0;
-
-                    for (int i = test.Length - 1; i >= 0; i--)
-                    {
-                        del++;
-                        if (char.IsWhiteSpace(test[i]))
-                            break;
-                    }
-
-                    test = test.Substring(0, test.Length - del);
-                }
-
-                if (o == null)
-                {
-                    return false;
-                }
-                else if (token.GetType() != typeof(StaticStringParser))
-                {
-                    suggestions.Add(token.RandomExample());
-                }
-                else
-                {
-                    suggestions.Add(test);
+                    sugg = new Suggestion(this, input, SuggestionMatchType.Sentence);
+                    return input.Length;
                 }
             }
 
-            sugg = new Suggestion(suggestions.ToArray());
-            return true;
+            byte op = 0;
+            string before = "";
+            string after = "";
+
+            for (int i = 0; i < Tokens.Count; i++)
+            {
+                IParser token = Tokens[i];
+
+                if (token is StaticStringParser)
+                {
+                    if (op < 2)
+                    {
+                        int del = (token as StaticStringParser).MatchLength(test);
+
+                        if (op == 0) // before
+                        {
+                            if (del > 0)
+                            {
+                                op = 1;
+                                test = test.Substring((token as StaticStringParser).Reference.Length);
+                            }
+                            else
+                            {
+                                before += (token as StaticStringParser).Reference;
+                            }
+                        }
+                        else // current
+                        {
+                            if (del == 0)
+                            {
+                                op = 2;
+                            }
+                            else
+                            {
+                                test = test.Substring((token as StaticStringParser).Reference.Length);
+                            }
+                        }
+                    }
+                    else // after
+                    {
+                        after += (token as StaticStringParser).Reference;
+                    }
+                }
+                else
+                {
+                    if (op < 2)
+                    {
+                        object o;
+
+                        if (op == 0) // before
+                        {
+                            if (Tokens.Count == i + 1) // last token
+                            {
+                                bool ok = token.TryParse(test, out o);
+
+                                if (ok)
+                                {
+                                    test = "";
+                                }
+                                else
+                                {
+                                    return -1;
+                                }
+                            }
+                            else if (Tokens[i + 1] is StaticStringParser) // following token is a static string
+                            {
+                                int del = 0;
+
+                                while ((del = (Tokens[i + 1] as StaticStringParser).MatchLength(test)) == 0 && test.Length > 0)
+                                {
+                                    test = test.Substring(1);
+                                }
+
+                                test = test.Substring(del);
+                                i++;
+                            }
+                            else // no support for chained variables yet
+                            {
+                                throw new NotImplementedException("no support for chained variables yet");
+                            }
+                        }
+                        else // during
+                        {
+                            if (Tokens.Count == i + 1) // last token
+                            {
+                                bool ok = token.TryParse(test, out o);
+
+                                if (ok)
+                                {
+                                    test = "";
+                                }
+                                else
+                                {
+                                    op = 2;
+                                    after = token.RandomExample();
+                                }
+                            }
+                            else if (Tokens[i + 1] is StaticStringParser) // following token is a static string
+                            {
+                                int del = 0;
+
+                                while ((del = (Tokens[i + 1] as StaticStringParser).MatchLength(test)) == 0 && test.Length > 0)
+                                {
+                                    test = test.Substring(1);
+                                }
+
+                                test = test.Substring(del);
+                                i++;
+                            }
+                            else // no support for chained variables yet
+                            {
+                                throw new NotImplementedException("no support for chained variables yet");
+                            }
+                        }
+                    }
+                    else // after
+                    {
+                        string ex = token.RandomExample();
+                        after += ex;
+                        test = test.Substring(ex.Length);
+                    }
+                }
+            }
+
+            if (coeff > 0)
+                sugg = new Suggestion(this, before, after, input);
+            return coeff;
         }
 
         internal int Parse(string input, out Dictionary<int, string> variables)
@@ -121,7 +221,7 @@ namespace Albion.Parsers
                     }
                     else // no support for chained variables yet
                     {
-                        return -1;
+                        throw new NotImplementedException("no support for chained variables yet");
                     }
                 }
             }
@@ -129,7 +229,7 @@ namespace Albion.Parsers
             return coeff;
         }
 
-        internal bool TryFinaleParse(Dictionary<int, string> vars, out Answer answer)
+        internal bool TryFinaleParse(Dictionary<int, string> vars, object invoker, out Answer answer)
         {
             answer = null;
 
@@ -170,7 +270,7 @@ namespace Albion.Parsers
                 i++;
             }
 
-            answer = new Answer(Method, orderedParameters);
+            answer = new Answer(Method, orderedParameters, invoker);
             return true;
         }
 
