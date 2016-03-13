@@ -21,18 +21,19 @@ namespace Albion.Attributes
         /// Tries to automatically convert the given value.
         /// If can't convert, returns null.
         /// </summary>
-        public ConverterAttribute(string classname, string methodname)
+        public ConverterAttribute(string methodname)
         {
-            ClassName = classname;
-            MethodName = methodname;
+            int splitindex = methodname.LastIndexOf('.');
+            ClassName = methodname.Substring(0, splitindex);
+            MethodName = methodname.Substring(splitindex);
 
-            ConverterType = Type.GetType(classname, false)?.GetTypeInfo();
+            ConverterType = Type.GetType(ClassName, false)?.GetTypeInfo();
 
             if (ConverterType == null)
                 throw new Exception("No corresponding method found.");
 
             ConvertMethod = ConverterType.DeclaredMethods.FirstOrDefault(x =>
-                x.Name == MethodName
+                x.Name == MethodName && x.IsStatic
              && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == typeof(string));
 
             if (ConvertMethod == null)

@@ -9,8 +9,12 @@ namespace Albion
 {
     public enum SuggestionMatchType : byte
     {
-        Sentence,
-        Description
+        Normal = 1,
+        Deep = 2,
+
+        Sentence = 4,
+        Description = 8,
+        ID = 16
     }
 
     public class Suggestion
@@ -24,8 +28,8 @@ namespace Albion
 
         internal Suggestion(SentenceParser parser, string before, string after, string input)
         {
-            MatchType = SuggestionMatchType.Sentence;
             SentenceAttr = parser.Attribute;
+            MatchType = SuggestionMatchType.Sentence;
 
             Before = before;
             After = after;

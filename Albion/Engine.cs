@@ -163,20 +163,20 @@ namespace Albion
 
         public IEnumerable<Suggestion> Suggest(string s)
         {
-            return Suggest(s, false, Language);
+            return Suggest(s, Language, SuggestionMatchType.Normal | SuggestionMatchType.Sentence);
         }
 
         public IEnumerable<Suggestion> Suggest(string s, string lang)
         {
-            return Suggest(s, false, lang);
+            return Suggest(s, lang, SuggestionMatchType.Normal | SuggestionMatchType.Sentence);
         }
 
-        public IEnumerable<Suggestion> Suggest(string s, bool searchDescr)
+        public IEnumerable<Suggestion> Suggest(string s, SuggestionMatchType matchType)
         {
-            return Suggest(s, searchDescr, Language);
+            return Suggest(s, Language, matchType);
         }
 
-        public IEnumerable<Suggestion> Suggest(string s, bool searchDescr, string lang)
+        public IEnumerable<Suggestion> Suggest(string s, string lang, SuggestionMatchType matchType)
         {
             Dictionary<Suggestion, int> suggs = new Dictionary<Suggestion, int>();
 
@@ -184,13 +184,23 @@ namespace Albion
             {
                 Suggestion sugg;
                 int coeff;
-                if ((coeff = sentence.Suggest(s, out sugg)) > 0)
+
+                if (matchType.HasFlag(SuggestionMatchType.Sentence)
+                    && (coeff = sentence.Suggest(s, matchType.HasFlag(SuggestionMatchType.Deep), out sugg)) > 0)
                 {
-                    suggs.Add(sugg, coeff);
+                    suggs.Add(sugg, coeff * 100);
                 }
-                else if (sentence.Attribute.Description.Contains(s.ToLower()))
+                else if (matchType.HasFlag(SuggestionMatchType.Description)
+                    && ((matchType.HasFlag(SuggestionMatchType.Deep) && sentence.Attribute.Description.Contains(s.ToLower()))
+                    || (sentence.Attribute.Description.StartsWith(s.ToLower()))))
                 {
-                    suggs.Add(new Suggestion(sentence, s, SuggestionMatchType.Description), 0);
+                    suggs.Add(new Suggestion(sentence, s, SuggestionMatchType.Description), s.Length);
+                }
+                else if (matchType.HasFlag(SuggestionMatchType.ID)
+                    && ((matchType.HasFlag(SuggestionMatchType.Deep) && sentence.Attribute.ID.Contains(s.ToLower()))
+                    || (sentence.Attribute.ID.ToLower() == s.ToLower())))
+                {
+                    suggs.Add(new Suggestion(sentence, s, SuggestionMatchType.ID), s.Length * 10);
                 }
             }
 

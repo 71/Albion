@@ -29,7 +29,7 @@ namespace Albion.Parsers
             Attribute = attr;
         }
 
-        internal int Suggest(string input, out Suggestion sugg)
+        internal int Suggest(string input, bool deep, out Suggestion sugg)
         {
             sugg = null;
 
@@ -65,6 +65,10 @@ namespace Albion.Parsers
                             {
                                 op = 1;
                                 test = test.Substring((token as StaticStringParser).Reference.Length);
+                            }
+                            else if (!deep)
+                            {
+                                return -1;
                             }
                             else
                             {

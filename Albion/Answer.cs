@@ -12,7 +12,6 @@ namespace Albion
         SentenceAttribute Attribute { get; }
         bool IsAsync { get; }
         Type ReturnType { get; }
-        bool ReturnsVoid { get; }
     }
 
     public class Answer<T> : IAnswer
@@ -20,7 +19,6 @@ namespace Albion
         public SentenceAttribute Attribute { get; private set; }
         public bool IsAsync { get; private set; }
         public Type ReturnType { get { return typeof(T); } }
-        public bool ReturnsVoid { get { return false; } }
 
         protected MethodInfo Method { get; set; }
         protected object[] Parameters { get; set; }
@@ -56,7 +54,6 @@ namespace Albion
         public SentenceAttribute Attribute { get; private set; }
         public bool IsAsync { get; private set; }
         public Type ReturnType { get; private set; }
-        public bool ReturnsVoid { get { return ReturnType == typeof(void); } }
 
         internal MethodInfo Method { get; set; }
         internal object[] Parameters { get; set; }

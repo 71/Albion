@@ -9,7 +9,7 @@
 `````csharp
 [Sentence("In {time} remind me to {todo}")]
 [Sentence("Remind me to {todo} in {time}")]
-public static string RemindMeIn(string todo, [Converter("In")]TimeSpan time)
+public static string RemindMeIn(string todo, TimeSpan time)
 {
     DateTime remindtime = DateTime.Now;
     remindtime = remindtime.Add(time);
