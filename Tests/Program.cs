@@ -18,7 +18,6 @@ namespace Albion.Tests
             engine.Register(typeof(CustomStaticClass));
 
             var customObj = new CustomClass() { Name = "John" };
-            engine.Register<CustomClass>(ref customObj);
             customObj.Name = "Greg";
 
             engine.ShouldSatisfyAllConditions(

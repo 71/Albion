@@ -1,4 +1,5 @@
-﻿using Albion.Parsers;
+﻿using Albion.Attributes;
+using Albion.Parsers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,13 +12,27 @@ namespace Albion.Parsers
 {
     internal class SentenceParser
     {
+        private static Random random = new Random();
+        private static string AnyOf(string[] strs)
+        {
+            return strs[random.Next(strs.Length)];
+        }
+
         public Type ReturnType { get; private set; }
         public ParameterInfo[] Parameters { get; private set; }
         public List<IParser> Tokens { get; private set; }
         public List<string> ParametersName { get; private set; }
+        public List<string[]> CustomSuggestions { get; private set; }
         public MethodInfo Method { get; private set; }
         public SentenceAttribute Attribute { get; private set; }
-        public string Full { get { return string.Join("", Tokens.Select(x => x.RandomExample())); } }
+
+        public string Full
+        {
+            get
+            {
+                return string.Join("", CustomSuggestions.Select(x => AnyOf(x)));
+            }
+        }
 
         private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr)
         {
@@ -301,6 +316,7 @@ namespace Albion.Parsers
         {
             List<IParser> parsers = new List<IParser>();
             List<string> names = new List<string>();
+            List<string[]> suggestions = new List<string[]>();
 
             string block = "";
             byte op = 0;
@@ -320,8 +336,13 @@ namespace Albion.Parsers
                 else if (c == '}' && op == 1)
                 {
                     block = block.ToLower();
-                    IParser parser = Engine.GetParserForParameter(parameters.FirstOrDefault(y => y.Name.ToLower() == block)?.ParameterType);
+                    ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block);
+                    ConverterAttribute attr = para.GetCustomAttribute<ConverterAttribute>();
+
+                    IParser parser = attr.CustomParser != null ? attr.CustomParser : Engine.GetParserForParameter(para.ParameterType);
+
                     parsers.Add(parser);
+                    suggestions.Add(attr != null && attr.Examples.Length > 0 ? attr.Examples : parser.Examples.ToArray());
                     names.Add(block);
 
                     op = 0;
