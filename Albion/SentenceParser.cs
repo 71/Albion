@@ -234,7 +234,7 @@ namespace Albion.Parsers
             return coeff;
         }
 
-        internal bool TryFinaleParse(Dictionary<int, string> vars, object invoker, out Answer answer)
+        internal bool TryFinaleParse(Dictionary<int, string> vars, out Answer answer)
         {
             answer = null;
 
@@ -275,7 +275,7 @@ namespace Albion.Parsers
                 i++;
             }
 
-            answer = new Answer(Method, orderedParameters, invoker);
+            answer = new Answer(Method, orderedParameters);
             return true;
         }
 

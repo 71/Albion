@@ -44,7 +44,6 @@ namespace Albion
         }
 
         private Stack<SentenceParser> Sentences { get; set; }
-        private Dictionary<Type, object> Objects { get; set; }
 
         public string Language { get; set; }
 
@@ -53,7 +52,6 @@ namespace Albion
         {
             Sentences = new Stack<SentenceParser>();
             Language = lang;
-            Objects = new Dictionary<Type, object>();
         }
 
         public void Register(params Type[] extensions)
@@ -67,19 +65,6 @@ namespace Albion
                     foreach (SentenceParser parser in parsers)
                         Sentences.Push(parser);
                 }
-            }
-        }
-
-        public void Register<T>(ref T obj)
-        {
-            Objects.Add(typeof(T), obj);
-
-            foreach (MethodInfo method in typeof(T).GetRuntimeMethods())
-            {
-                var parsers = SentenceParser.Generate(method);
-
-                foreach (SentenceParser parser in parsers)
-                    Sentences.Push(parser);
             }
         }
 
@@ -101,10 +86,7 @@ namespace Albion
             foreach (var sentence in sentences.OrderByDescending(x => x.Item2))
             {
                 Answer answer;
-                Dictionary<string, object> parsedVars = new Dictionary<string, object>();
-                object invoker = Objects.ContainsKey(sentence.Item1.Method.DeclaringType) ? Objects[sentence.Item1.Method.DeclaringType] : null;
-
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, invoker, out answer))
+                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
                 {
                     yield return new Answer<T>(answer);
                 }
@@ -129,10 +111,8 @@ namespace Albion
             foreach (var sentence in sentences.OrderByDescending(x => x.Item2))
             {
                 Answer answer;
-                Dictionary<string, object> parsedVars = new Dictionary<string, object>();
-                object invoker = Objects.ContainsKey(sentence.Item1.Method.DeclaringType) ? Objects[sentence.Item1.Method.DeclaringType] : null;
 
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, invoker, out answer))
+                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
                 {
                     yield return answer;
                 }
