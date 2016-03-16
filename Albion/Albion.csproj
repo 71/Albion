@@ -38,8 +38,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Answer.cs" />
-    <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\ParserAttribute.cs" />
+    <Compile Include="Attributes\TypeParserAttribute.cs" />
     <Compile Include="Attributes\SentenceAttribute.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Parsers\ArrayParser.cs" />

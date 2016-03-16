@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
-    [Parser]
+    [TypeParser]
     public class DateTimeParser : TypeParser<DateTime>
     {
         public override IEnumerable<string> Examples

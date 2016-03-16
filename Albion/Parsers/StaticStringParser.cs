@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
-    [Parser]
+    [TypeParser]
     public class StaticStringParser : TypeParser<string>
     {
         public string Reference { get; private set; }

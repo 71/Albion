@@ -23,7 +23,7 @@ namespace Albion
                 {
                     if (!t.IsAbstract
                         && t.ImplementedInterfaces.Contains(typeof(IParser))
-                        && t.GetCustomAttribute<Attributes.ParserAttribute>() != null)
+                        && t.GetCustomAttribute<Attributes.TypeParserAttribute>() != null)
                     {
                         var constructor = t.DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0);
 

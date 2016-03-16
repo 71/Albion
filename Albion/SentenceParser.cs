@@ -337,7 +337,7 @@ namespace Albion.Parsers
                 {
                     block = block.ToLower();
                     ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block);
-                    ConverterAttribute attr = para.GetCustomAttribute<ConverterAttribute>();
+                    ParserAttribute attr = para.GetCustomAttribute<ParserAttribute>();
 
                     IParser parser = attr.CustomParser != null ? attr.CustomParser : Engine.GetParserForParameter(para.ParameterType);
 

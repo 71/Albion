@@ -7,7 +7,7 @@ using Albion.Attributes;
 
 namespace Albion.Parsers
 {
-    [Parser]
+    [TypeParser]
     public class TimeSpanParser : TypeParser<TimeSpan>
     {
         public override IEnumerable<string> Examples

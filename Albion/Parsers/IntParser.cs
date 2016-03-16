@@ -8,7 +8,7 @@ using Albion.Attributes;
 
 namespace Albion.Parsers
 {
-    [Parser]
+    [TypeParser]
     public class IntParser : TypeParser<int>
     {
         public override IEnumerable<string> Examples
