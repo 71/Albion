@@ -17,6 +17,15 @@ namespace Albion.Parsers
         public bool UseRegex { get; set; }
         public bool Trim { get; set; }
 
+        public StringEnumParser(params string[] possibilities)
+        {
+            this.possibilities = possibilities;
+
+            CaseSensitive = false;
+            UseRegex = true;
+            Trim = true;
+        }
+
         public StringEnumParser(bool casesensitive, bool useregex, bool trim, params string[] possibilities)
         {
             this.possibilities = possibilities;
