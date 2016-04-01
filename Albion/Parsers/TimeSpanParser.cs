@@ -10,6 +10,8 @@ namespace Albion.Parsers
     [TypeParser]
     public class TimeSpanParser : TypeParser<TimeSpan>
     {
+        public override int Coeff { get { return 100; } }
+
         public override IEnumerable<string> Examples
         {
             get

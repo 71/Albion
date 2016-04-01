@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Albion.Attributes;
+using Albion.Parsers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,6 +45,15 @@ namespace Albion.Tests
             return time.HasValue
                 ? String.Format("I'll remind you to {0} in {1} minutes", todo, time.Value.TotalMinutes)
                 : String.Format("I'll remind you to {0}", todo);
+        }
+
+        /// <summary>
+        /// Custom parsers!
+        /// </summary>
+        [Sentence("Order {food}", "Order some {food}")]
+        public static string Order([Parser(typeof(StringEnumParser), false, true, true, new [] { "eggs?", "tomato(es)?", "bacon" })]string food)
+        {
+            return "Alright, we'll buy some " + food + ".";
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ namespace Albion.Parsers
 {
     public interface IParser
     {
+        int Coeff { get; }
         Type ParseTo { get; }
         IEnumerable<string> Examples { get; }
 
@@ -21,6 +22,7 @@ namespace Albion.Parsers
 
         public Type ParseTo { get { return typeof(T); } }
         public abstract IEnumerable<string> Examples { get; }
+        public abstract int Coeff { get; }
 
         public bool TryParse(string s, out object res)
         {

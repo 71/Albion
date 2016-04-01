@@ -30,11 +30,11 @@ namespace Albion.Parsers
         {
             get
             {
-                return string.Join("", CustomSuggestions.Select(x => AnyOf(x)));
+                return string.Join("", CustomSuggestions == null ? new string[0] : CustomSuggestions.Select(x => AnyOf(x)));
             }
         }
 
-        private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr)
+        private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr, List<string[]> suggestions)
         {
             Method = info;
             ParametersName = names;
@@ -42,6 +42,7 @@ namespace Albion.Parsers
             Tokens = tokens;
             ReturnType = info.ReturnType;
             Attribute = attr;
+            CustomSuggestions = suggestions;
         }
 
         internal int Suggest(string input, bool deep, out Suggestion sugg)
@@ -50,13 +51,19 @@ namespace Albion.Parsers
 
             int coeff = 0;
             string test = input.ToLower();
-
-            foreach (StaticStringParser token in Tokens.OfType<StaticStringParser>())
+            
+            if (!deep)
             {
-                if (token.Reference.Contains(test))
+                IParser token = Tokens.FirstOrDefault();
+                if (token != null && token is StaticStringParser && ((StaticStringParser)token).Reference.StartsWith(test))
                 {
-                    sugg = new Suggestion(this, input, SuggestionMatchType.Sentence);
-                    return input.Length;
+                    string a = ((StaticStringParser)token).Reference.Substring(test.Length);
+
+                    foreach (IParser parser in Tokens.Skip(1))
+                        a += parser.RandomExample() + ' ';
+
+                    sugg = new Suggestion(this, "", a, input);
+                    return input.Length * 100;
                 }
             }
 
@@ -121,6 +128,7 @@ namespace Albion.Parsers
 
                                 if (ok)
                                 {
+                                    coeff += test.Length * token.Coeff;
                                     test = "";
                                 }
                                 else
@@ -153,6 +161,7 @@ namespace Albion.Parsers
 
                                 if (ok)
                                 {
+                                    coeff += test.Length * token.Coeff;
                                     test = "";
                                 }
                                 else
@@ -306,13 +315,13 @@ namespace Albion.Parsers
 
                     if (parsed != null)
                     {
-                        yield return new SentenceParser(parsed.Item1, parsed.Item2, info, attr);
+                        yield return new SentenceParser(parsed.Item1, parsed.Item2, info, attr, parsed.Item3);
                     }
                 }
             }
         }
 
-        private static Tuple<List<IParser>, List<string>> ParseSentence(string s, ParameterInfo[] parameters)
+        private static Tuple<List<IParser>, List<string>, List<string[]>> ParseSentence(string s, ParameterInfo[] parameters)
         {
             List<IParser> parsers = new List<IParser>();
             List<string> names = new List<string>();
@@ -339,7 +348,7 @@ namespace Albion.Parsers
                     ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block);
                     ParserAttribute attr = para.GetCustomAttribute<ParserAttribute>();
 
-                    IParser parser = attr.CustomParser != null ? attr.CustomParser : Engine.GetParserForParameter(para.ParameterType);
+                    IParser parser = attr?.CustomParser ?? Engine.GetParserForParameter(para.ParameterType);
 
                     parsers.Add(parser);
                     suggestions.Add(attr != null && attr.Examples.Length > 0 ? attr.Examples : parser.Examples.ToArray());
@@ -360,7 +369,7 @@ namespace Albion.Parsers
                 names.Add(null);
             }
 
-            return new Tuple<List<IParser>, List<string>>(parsers, names);
+            return new Tuple<List<IParser>, List<string>, List<string[]>>(parsers, names, suggestions);
         }
 
         public override string ToString()

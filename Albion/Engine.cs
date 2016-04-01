@@ -168,7 +168,7 @@ namespace Albion
                 if (matchType.HasFlag(SuggestionMatchType.Sentence)
                     && (coeff = sentence.Suggest(s, matchType.HasFlag(SuggestionMatchType.Deep), out sugg)) > 0)
                 {
-                    suggs.Add(sugg, coeff * 100);
+                    suggs.Add(sugg, coeff);
                 }
                 else if (matchType.HasFlag(SuggestionMatchType.Description)
                     && ((matchType.HasFlag(SuggestionMatchType.Deep) && sentence.Attribute.Description.Contains(s.ToLower()))

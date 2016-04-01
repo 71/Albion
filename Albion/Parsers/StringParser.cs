@@ -10,6 +10,8 @@ namespace Albion.Parsers
     [TypeParser]
     public class StringParser : TypeParser<string>
     {
+        public override int Coeff { get { return 1; } }
+
         public override IEnumerable<string> Examples
         {
             get

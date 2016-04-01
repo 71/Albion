@@ -25,7 +25,7 @@ namespace Albion.Attributes
 
         public ParserAttribute(Type parser, params object[] ctorParameters)
         {
-            if (parser != null && parser.GetTypeInfo().IsSubclassOf(typeof(IParser)))
+            if (parser != null && parser.GetTypeInfo().ImplementedInterfaces.Contains(typeof(IParser)))
             {
                 ConstructorInfo ctor = (from ctr in parser.GetTypeInfo().DeclaredConstructors
                                         where ctr.GetParameters().All(para => para.ParameterType == ctorParameters[para.Position].GetType())
@@ -37,7 +37,7 @@ namespace Albion.Attributes
                 }
                 else
                 {
-                    throw new ArgumentNullException(String.Format("{0} does not provide a correct constructor.", parser));
+                    throw new ArgumentException(String.Format("{0} does not provide a correct constructor.", parser));
                 }
             }
             else

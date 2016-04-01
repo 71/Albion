@@ -10,6 +10,8 @@ namespace Albion.Parsers
     {
         public static string[] Separators = new string[] { ";", ",", "and", "or" };
 
+        public override int Coeff { get { return 1; } }
+
         public override IEnumerable<string> Examples
         {
             get

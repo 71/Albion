@@ -52,7 +52,7 @@ namespace Albion
             Match = "";
             After = "";
             
-            while (!full.StartsWith(input.ToLower()))
+            while (!full.StartsWith(input.ToLower()) && full.Length > 0)
             {
                 Before += full[0];
                 full = full.Substring(1);

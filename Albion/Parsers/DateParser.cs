@@ -11,6 +11,8 @@ namespace Albion.Parsers
     [TypeParser]
     public class DateTimeParser : TypeParser<DateTime>
     {
+        public override int Coeff { get { return 100; } }
+
         public override IEnumerable<string> Examples
         {
             get
