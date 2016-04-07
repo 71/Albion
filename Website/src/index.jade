@@ -1,0 +1,55 @@
+extends layout.jade
+
+block content
+    #notice
+        p= notice
+    
+    section.intro(tabindex='1')
+        h1.title #[img.logo(src='img/logo.png')] #{main}
+        p= intro
+        
+    section.example(tabindex='2')
+        .ex
+            .exinbox
+                input#exin(type='text', readonly)
+    
+    section.tryitout(tabindex='3')
+        h1= tryitout
+        
+        table
+            tr
+                td: h2 1.
+                td: h3= trysteps[0]
+            tr
+                td= ''
+                td
+                    input.name
+                    pre: code.
+                        [<i class="attr">Sentence</i>(<i class="str">"<span class="spaces">    </span> is trying out {what}"</i>)]
+                        <i class="keywords">public static void</i> Test(<i class="keywords">string</i> what)
+                        {
+                            <i class="keywords">return</i> <i class="str">"You're trying out "</i> <i class="operator">+</i> what;
+                        }
+                    input.name
+                    pre: code.
+                        engine.Build(<i class="str">"fr-FR"</i>)
+                              .Sentence(<i class="str">"<span class="spaces">    </span> essaie {quoi}"</i>, quoi <i class="operator">=&gt;</i> quoi.IsType<i class="operator">&lt;</i><i class="keywords">string</i><i class="operator">&gt;</i>())
+                              .Handler(o <i class="operator">=&gt;</i> <i class="str">"Tu essaies "</i> <i class="operator">+</i> o.quoi);
+            tr
+                td: h2 2.
+                td: h3= trysteps[1]
+            tr
+                td= ''
+                td
+                    input.app
+                    input.name.res
+                    pre: code!= userinput
+
+    section.getstarted
+        h1= getstarted
+        
+        table
+            each step, i in gosteps
+                tr
+                    td: h2= (i + 1) + '.'
+                    td: h3!= step

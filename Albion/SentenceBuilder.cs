@@ -16,12 +16,14 @@ namespace Albion
         internal string description;
         internal string language;
         internal Dictionary<string, IDictionary<string, SentenceBuilderParameter>> sentences;
+        internal Dictionary<string, string> sentenceLanguages;
 
         internal SentenceBuilder(Engine e, string lang)
         {
             engine = e;
             language = lang;
             sentences = new Dictionary<string, IDictionary<string, SentenceBuilderParameter>>();
+            sentenceLanguages = new Dictionary<string, string>();
         }
 
         private static IEnumerable<KeyValuePair<string, SentenceBuilderParameter>> GetParameters(Expression<Func<SentenceBuilderParameter, SentenceBuilderParameter>>[] exprs)
@@ -64,10 +66,16 @@ namespace Albion
             }
         }
 
-        public SentenceBuilder Sentence(string sentence, params Expression<Func<SentenceBuilderParameter, SentenceBuilderParameter>>[] parameters)
+        public SentenceBuilder Sentence(string lang, string sentence, params Expression<Func<SentenceBuilderParameter, SentenceBuilderParameter>>[] parameters)
         {
+            sentenceLanguages.Add(sentence, lang);
             sentences.Add(sentence, GetParameters(parameters).ToDictionary(x => x.Key, x => x.Value));
             return this;
+        }
+
+        public SentenceBuilder Sentence(string sentence, params Expression<Func<SentenceBuilderParameter, SentenceBuilderParameter>>[] parameters)
+        {
+            return Sentence(language, sentence, parameters);
         }
 
         public class SentenceBuilderParameter
@@ -112,7 +120,7 @@ namespace Albion
                 _examples = new List<string>();
             }
 
-            public SentenceBuilderParameter CustomExample(params string[] examples)
+            public SentenceBuilderParameter CustomExamples(params string[] examples)
             {
                 _examples.AddRange(examples);
                 return this;
