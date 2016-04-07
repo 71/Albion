@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Jee - Albion</title>
+    <meta name="theme-color" content="#030533">
+    <meta name="viewport" content="user-scalable=no">
+    <link rel="icon" href="img/ic.png" type="image/png">
+    <link rel="stylesheet" href="app.css">
+    <script src="app.js"></script>
+  </head>
+</html>
+<body class="nojs">
+  <script>document.body.classList.remove('nojs');</script>
+  <div id="notice">
+    <p>Sorry, but this website is only available for javascript users. Don't worry, there are no ads nor trackers. Only some fancy animations.</p>
+  </div>
+  <section tabindex="1" class="intro">
+    <h1 class="title"><img src="img/logo.png" class="logo"> Albion</h1>
+    <p>A smarter parser for .NET.</p>
+  </section>
+  <section tabindex="2" class="example">
+    <div class="ex">
+      <div class="exinbox">
+        <input id="exin" type="text" readonly>
+      </div>
+    </div>
+  </section>
+  <section tabindex="3" class="tryitout">
+    <h1>WANNA TRY IT OUT?</h1>
+    <table>
+      <tr>
+        <td>
+          <h2>1.</h2>
+        </td>
+        <td>
+          <h3>Define a sentence and a method body</h3>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <input class="name">
+          <pre><code>[<i class="attr">Sentence</i>(<i class="str">"<span class="spaces">    </span> is trying out {what}"</i>)]
+<i class="keywords">public static void</i> Test(<i class="keywords">string</i> what)
+{
+    <i class="keywords">return</i> <i class="str">"You're trying out "</i> <i class="operator">+</i> what;
+}</code></pre>
+          <input class="name">
+          <pre><code>engine.Build(<i class="str">"fr-FR"</i>)
+      .Sentence(<i class="str">"<span class="spaces">    </span> essaie {quoi}"</i>, quoi <i class="operator">=&gt;</i> quoi.IsType<i class="operator">&lt;</i><i class="keywords">string</i><i class="operator">&gt;</i>())
+      .Handler(o <i class="operator">=&gt;</i> <i class="str">"Tu essaies "</i> <i class="operator">+</i> o.quoi);</code></pre>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <h2>2.</h2>
+        </td>
+        <td>
+          <h3>Enter some input</h3>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <input class="app">
+          <input class="name res">
+          <pre><code>engine.Ask("<span class="spaces">    </span> is trying out <span class="app">Albion</span>"); <i class="comment">// Returns 'You're trying out <span class="app">Albion</span>'</i></code></pre>
+        </td>
+      </tr>
+    </table>
+  </section>
+  <section class="getstarted">
+    <h1>LET'S GET STARTED!</h1>
+    <table>
+      <tr>
+        <td>
+          <h2>1.</h2>
+        </td>
+        <td>
+          <h3>Check out the <a href="https://github.com/idotjee/Albion/wiki" target='_blank'>wiki</a></h3>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <h2>2.</h2>
+        </td>
+        <td>
+          <h3>Check out the <a href="https://github.com/idotjee/Albion" target='_blank'>source code</a></h3>
+        </td>
+      </tr>
+    </table>
+  </section>
+</body>

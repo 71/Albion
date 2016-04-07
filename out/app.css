@@ -1,0 +1,227 @@
+body {
+  color: #fff;
+  margin: 0;
+  background: linear-gradient(#06061c, #06061c, #06061c, #0d212e, #18342f);
+  overflow-x: hidden;
+  padding-bottom: 5vh;
+}
+body section {
+  outline: none;
+}
+body .intro {
+  margin: 3em;
+  min-height: 20vh;
+}
+body .intro h1 {
+  font: lighter 6em 'Open Sans', 'Segoe UI', 'Roboto', sans-serif;
+  margin: 0;
+}
+body .intro p {
+  color: #ffe;
+  font: lighter 1.7em 'Open Sans', 'Segoe UI', 'Roboto', sans-serif;
+  margin-top: 0;
+}
+body .example {
+  min-height: 60vh;
+}
+body .example .ex {
+  height: 500px;
+  overflow: hidden;
+}
+body .example .ex .exinbox,
+body .example .ex .exarea {
+  width: 100%;
+  height: inherit;
+  position: absolute;
+  transition: transform 0.8s ease-out;
+}
+body .example .ex .exinbox {
+  margin: auto;
+  text-align: center;
+  z-index: 1;
+  background-image: url("img/inputbg.svg");
+  background-repeat: repeat;
+  background-position: -10px;
+}
+body .example .ex .exinbox input {
+  background-color: #fff;
+  border: none;
+  width: 400px;
+  text-align: center;
+  padding: 0.5em;
+  font-size: larger;
+  margin-top: 215px;
+  height: 50px;
+}
+body .example .ex .exarea {
+  transform: translateX(100%);
+  z-index: 2;
+}
+body .tryitout {
+  *zoom: 1;
+  width: auto;
+  max-width: 1440px;
+  float: none;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+body .tryitout:before,
+body .tryitout:after {
+  content: '';
+  display: table;
+}
+body .tryitout:after {
+  clear: both;
+}
+body .tryitout table {
+  width: 100%;
+}
+body .tryitout input.app {
+  border: none;
+  font-size: 1.2em;
+  background-color: #1e1e1e;
+}
+body .tryitout input.app:nth-of-type(1) {
+  width: 100%;
+  padding: 1em;
+  border-radius: 0.5em;
+  color: #fff;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 1.2em;
+}
+body .tryitout input.name {
+  background-color: #1e1e1e;
+  border: none;
+  color: #d69d85;
+  position: absolute;
+  font-family: monospace;
+  font-size: 1.2em;
+  width: 2.285714285714286em;
+  text-decoration: underline;
+}
+body .tryitout input.name:nth-of-type(1) {
+  margin: 2.45em 0 0 7.55em;
+}
+body .tryitout input.name:nth-of-type(2) {
+  margin: 2.62em 0 0 10.9em;
+}
+body .tryitout input.name.res:nth-of-type(2) {
+  margin: 2.45em 0 0 8.2em;
+  color: #fff;
+}
+body .tryitout input.name.res:nth-of-type(3) {
+  margin: 3.62em 0 0 8.2em;
+  color: #608b4e;
+}
+body .tryitout pre {
+  padding: 1.5em;
+  background-color: #1e1e1e;
+  border-radius: 0.5em;
+  font-size: 1.2em;
+  width: 100%;
+}
+body .tryitout pre i {
+  font-style: normal;
+}
+body .tryitout pre i.str {
+  color: #d69d85;
+}
+body .tryitout pre i.keywords {
+  color: #569cd6;
+}
+body .tryitout pre i.attr {
+  color: #4bd4b8;
+}
+body .tryitout pre i.comment {
+  color: #608b4e;
+}
+body .tryitout pre i.operator {
+  color: #a1a3ad;
+}
+body .tryitout h1 {
+  font-size: 7em !important;
+}
+body .tryitout h2 {
+  font-size: 5em !important;
+  padding: 0;
+  margin: 0;
+}
+body .tryitout td h3 {
+  text-align: left;
+  font-size: 3em !important;
+  margin: 0.65em 0 0 0;
+}
+body .tryitout h1,
+body .tryitout h2,
+body .tryitout h3 {
+  font: lighter 6em 'Open Sans', 'Segoe UI', 'Roboto', sans-serif;
+  font-stretch: extra-expanded;
+  text-align: center;
+  font-style: italic;
+}
+body .getstarted {
+  *zoom: 1;
+  width: auto;
+  max-width: 1440px;
+  float: none;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+body .getstarted:before,
+body .getstarted:after {
+  content: '';
+  display: table;
+}
+body .getstarted:after {
+  clear: both;
+}
+body .getstarted a,
+body .getstarted a:visited {
+  color: #fff;
+}
+body .getstarted h1,
+body .getstarted h2,
+body .getstarted h3 {
+  font: lighter 6em 'Open Sans', 'Segoe UI', 'Roboto', sans-serif;
+  font-stretch: extra-expanded;
+  text-align: center;
+  font-style: italic;
+}
+body .getstarted h1 {
+  font-size: 7em !important;
+}
+body .getstarted h2 {
+  font-size: 5em !important;
+  padding: 0;
+  margin: 0;
+}
+body .getstarted td h3 {
+  text-align: left;
+  font-size: 3em !important;
+  margin: 0.65em 0 0 0;
+}
+body #notice {
+  display: none;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  background-color: rgba(0,0,0,0.8);
+  position: fixed;
+  z-index: 101;
+}
+body.nojs #notice {
+  display: block;
+}
+h1.title img,
+h2.title img {
+  width: 1em;
+  margin-bottom: -0.15em;
+  margin-right: 0.1em;
+}
