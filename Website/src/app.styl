@@ -38,38 +38,26 @@ body
 
     .example
         min-height: 60vh
+        width: 100%
 
         .ex
             height: 500px
-            overflow: hidden
+            margin: 0
+            text-align: center
+            z-index: 1
+            background-image: url(img/inputbg.svg)
+            background-repeat: repeat
+            background-position: -10px
 
-            .exinbox, .exarea
-                width: 100%
-                height: inherit
-                position: absolute
-                transition: transform .8s ease-out
-
-            .exinbox
-                margin: auto
+            input
+                background-color: white
+                border: none
+                width: 400px
                 text-align: center
-                z-index: 1
-                background-image: url(img/inputbg.svg)
-                background-repeat: repeat
-                background-position: -10px
-
-                input
-                    background-color: white
-                    border: none
-                    width: 400px
-                    text-align: center
-                    padding: .5em
-                    font-size: larger
-                    margin-top: 215px
-                    height: 50px
-
-            .exarea
-                transform: translateX(100%)
-                z-index: 2
+                padding: .5em
+                font-size: larger
+                margin-top: 215px
+                height: 50px
 
     .tryitout
         center()

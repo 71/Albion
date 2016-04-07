@@ -109,6 +109,8 @@ window.onload = () => {
     const appinput = document.querySelector('input.app') as HTMLInputElement;
     const appspaces = document.querySelectorAll('span.app');
 
+    let myName = location.hash.length <= 1 ? 'Greg' : location.hash.substr(1);
+
     appinput.onblur = (e) => {
         if (appinput.value == "") {
             appinput.value = "Albion";
@@ -141,11 +143,11 @@ window.onload = () => {
                     let ns = namespaces[o] as HTMLSpanElement;
 
                     ns.innerText = '';
-                    for (let p = 0; p < "Greg".length; p++)
+                    for (let p = 0; p < myName.length; p++)
                         ns.innerText += ' ';
 
-                    no.style.width = ("Greg".length / 1.75) + 'em';
-                    no.value = "Greg";
+                    no.style.width = (myName.length / 1.75) + 'em';
+                    no.value = myName;
                 }
             }
         };
@@ -169,6 +171,15 @@ window.onload = () => {
             }
         };
 
-        ni.value = 'Greg';
+        ni.value = myName;
+        ni.style.width = (ni.value.length / 1.75) + 'em';
+
+        for (let o = 0; o < namespaces.length; o++) {
+            let no = namespaces[o] as HTMLSpanElement;
+
+            no.innerText = '';
+            for (let p = 0; p < ni.value.length; p++)
+                no.innerText += ' ';
+        }
     }
 };
