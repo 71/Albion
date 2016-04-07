@@ -92,6 +92,7 @@ window.onload = function () {
     var namespaces = document.querySelectorAll('span.spaces');
     var appinput = document.querySelector('input.app');
     var appspaces = document.querySelectorAll('span.app');
+    var myName = location.hash.length <= 1 ? 'Greg' : location.hash.substr(1);
     appinput.onblur = function (e) {
         if (appinput.value == "") {
             appinput.value = "Albion";
@@ -116,10 +117,10 @@ window.onload = function () {
                     var no = nameinputs[o];
                     var ns = namespaces[o];
                     ns.innerText = '';
-                    for (var p = 0; p < "Greg".length; p++)
+                    for (var p = 0; p < myName.length; p++)
                         ns.innerText += ' ';
-                    no.style.width = ("Greg".length / 1.75) + 'em';
-                    no.value = "Greg";
+                    no.style.width = (myName.length / 1.75) + 'em';
+                    no.value = myName;
                 }
             }
         };
@@ -137,7 +138,14 @@ window.onload = function () {
                     no.value = ni.value;
             }
         };
-        ni.value = 'Greg';
+        ni.value = myName;
+        ni.style.width = (ni.value.length / 1.75) + 'em';
+        for (var o = 0; o < namespaces.length; o++) {
+            var no = namespaces[o];
+            no.innerText = '';
+            for (var p = 0; p < ni.value.length; p++)
+                no.innerText += ' ';
+        }
     };
     for (var i = 0; i < nameinputs.length; i++) {
         _loop_1(i);

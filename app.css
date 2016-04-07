@@ -23,27 +23,18 @@ body .intro p {
 }
 body .example {
   min-height: 60vh;
+  width: 100%;
 }
 body .example .ex {
   height: 500px;
-  overflow: hidden;
-}
-body .example .ex .exinbox,
-body .example .ex .exarea {
-  width: 100%;
-  height: inherit;
-  position: absolute;
-  transition: transform 0.8s ease-out;
-}
-body .example .ex .exinbox {
-  margin: auto;
+  margin: 0;
   text-align: center;
   z-index: 1;
   background-image: url("img/inputbg.svg");
   background-repeat: repeat;
   background-position: -10px;
 }
-body .example .ex .exinbox input {
+body .example .ex input {
   background-color: #fff;
   border: none;
   width: 400px;
@@ -52,10 +43,6 @@ body .example .ex .exinbox input {
   font-size: larger;
   margin-top: 215px;
   height: 50px;
-}
-body .example .ex .exarea {
-  transform: translateX(100%);
-  z-index: 2;
 }
 body .tryitout {
   *zoom: 1;
