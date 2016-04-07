@@ -18,6 +18,10 @@ namespace Albion.Parsers
             return strs[random.Next(strs.Length)];
         }
 
+        private bool m_built;
+        private Action<dynamic> m_action;
+        private Func<dynamic, object> m_func;
+
         public Type ReturnType { get; private set; }
         public ParameterInfo[] Parameters { get; private set; }
         public List<IParser> Tokens { get; private set; }
@@ -34,6 +38,36 @@ namespace Albion.Parsers
             }
         }
 
+        internal SentenceParser(List<IParser> tokens, List<string> names, Func<dynamic, object> deleg, List<string[]> suggestions, string sentence, string lang, string descr)
+        {
+            var info = deleg.GetMethodInfo();
+
+            Method = info;
+            ParametersName = names;
+            Parameters = info.GetParameters();
+            Tokens = tokens;
+            ReturnType = info.ReturnType;
+            Attribute = new SentenceAttribute(sentence) { Description = descr, Language = lang };
+            CustomSuggestions = suggestions;
+            m_built = true;
+            m_func = deleg;
+        }
+
+        internal SentenceParser(List<IParser> tokens, List<string> names, Action<dynamic> deleg, List<string[]> suggestions, string sentence, string lang, string descr)
+        {
+            var info = deleg.GetMethodInfo();
+
+            Method = info;
+            ParametersName = names;
+            Parameters = info.GetParameters();
+            Tokens = tokens;
+            ReturnType = info.ReturnType;
+            Attribute = new SentenceAttribute(sentence) { Description = descr, Language = lang };
+            CustomSuggestions = suggestions;
+            m_built = true;
+            m_action = deleg;
+        }
+
         private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr, List<string[]> suggestions)
         {
             Method = info;
@@ -43,6 +77,7 @@ namespace Albion.Parsers
             ReturnType = info.ReturnType;
             Attribute = attr;
             CustomSuggestions = suggestions;
+            m_built = false;
         }
 
         internal int Suggest(string input, bool deep, out Suggestion sugg)
@@ -250,7 +285,7 @@ namespace Albion.Parsers
                     }
                     else // no support for chained variables yet
                     {
-                        throw new NotImplementedException("no support for chained variables yet");
+                        throw new NotImplementedException("no support for chained variables");
                     }
                 }
             }
@@ -262,44 +297,66 @@ namespace Albion.Parsers
         {
             answer = null;
 
-            var orderedParameters = new object[Parameters.Length];
-            
-            for (int o = 0; o < Parameters.Length; o++)
+            if (m_built)
             {
-                if (Parameters[o].ParameterType == typeof(SentenceAttribute))
-                {
-                    orderedParameters[o] = Attribute;
-                }
-            }
+                Dictionary<string, object> dic = new Dictionary<string, object>();
 
-            int i = 0;
-            foreach (KeyValuePair<int, string> pair in vars)
-            {
-                object parameter;
-                if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
+                int i = 0;
+                foreach (KeyValuePair<int, string> pair in vars)
                 {
-                    int pos = 0;
-                    while (Parameters[pos].Name != ParametersName[pair.Key])
-                        pos++;
-                    
-                    if (parameter == null)
+                    object parameter;
+                    if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
+                        dic[ParametersName[pair.Key]] = parameter;
+                    else
+                        return false;
+                    i++;
+                }
+
+                answer = m_action == null
+                    ? new Answer(m_func, new DynamicDictionary(dic))
+                    : new Answer(m_action, new DynamicDictionary(dic));
+            }
+            else
+            {
+                var orderedParameters = new object[Parameters.Length];
+
+                for (int o = 0; o < Parameters.Length; o++)
+                {
+                    if (Parameters[o].ParameterType == typeof(SentenceAttribute))
                     {
-                        if (Parameters[pos].HasDefaultValue)
-                            parameter = Parameters[pos].DefaultValue;
-                        else
-                            throw new ArgumentNullException();
+                        orderedParameters[o] = Attribute;
                     }
-
-                    orderedParameters[pos] = parameter;
                 }
-                else
+
+                int i = 0;
+                foreach (KeyValuePair<int, string> pair in vars)
                 {
-                    return false;
-                }
-                i++;
-            }
+                    object parameter;
+                    if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
+                    {
+                        int pos = 0;
+                        while (Parameters[pos].Name != ParametersName[pair.Key])
+                            pos++;
 
-            answer = new Answer(Method, orderedParameters);
+                        if (parameter == null)
+                        {
+                            if (Parameters[pos].HasDefaultValue)
+                                parameter = Parameters[pos].DefaultValue;
+                            else
+                                throw new ArgumentNullException();
+                        }
+
+                        orderedParameters[pos] = parameter;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    i++;
+                }
+
+                answer = new Answer(Method, orderedParameters);
+            }
             return true;
         }
 
@@ -321,7 +378,56 @@ namespace Albion.Parsers
             }
         }
 
-        private static Tuple<List<IParser>, List<string>, List<string[]>> ParseSentence(string s, ParameterInfo[] parameters)
+        internal static Tuple<List<IParser>, List<string>, List<string[]>> ParseSentence(
+            string s, IDictionary<string, SentenceBuilder.SentenceBuilderParameter> parameters)
+        {
+            List<IParser> parsers = new List<IParser>();
+            List<string> names = new List<string>();
+            List<string[]> suggestions = new List<string[]>();
+
+            string block = "";
+            byte op = 0;
+
+            foreach (char c in s.ToCharArray())
+            {
+                if (c == '{')
+                {
+                    if (block.Length > 0)
+                    {
+                        parsers.Add(new StaticStringParser(block));
+                        names.Add(null);
+                        block = String.Empty;
+                    }
+                    op = 1;
+                }
+                else if (c == '}' && op == 1)
+                {
+                    block = block.ToLower();
+                    IParser parser = parameters[block].Parser;
+
+                    parsers.Add(parser);
+                    suggestions.Add(parameters[block].HasExamples ? parameters[block].Examples.ToArray() : parser.Examples.ToArray());
+                    names.Add(block);
+
+                    op = 0;
+                    block = String.Empty;
+                }
+                else
+                {
+                    block += c;
+                }
+            }
+
+            if (!String.IsNullOrWhiteSpace(block))
+            {
+                parsers.Add(new StaticStringParser(block));
+                names.Add(null);
+            }
+
+            return new Tuple<List<IParser>, List<string>, List<string[]>>(parsers, names, suggestions);
+        }
+
+        internal static Tuple<List<IParser>, List<string>, List<string[]>> ParseSentence(string s, ParameterInfo[] parameters)
         {
             List<IParser> parsers = new List<IParser>();
             List<string> names = new List<string>();

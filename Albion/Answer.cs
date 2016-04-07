@@ -24,6 +24,8 @@ namespace Albion
 
         protected MethodInfo Method { get; set; }
         protected object[] Parameters { get; set; }
+        
+        internal Func<dynamic, T> Handler { get; set; }
 
         internal Answer(Answer a)
         {
@@ -31,11 +33,14 @@ namespace Albion
             Method = a.Method;
             Parameters = a.Parameters;
             ObjectType = a.ObjectType;
+            Handler = a.Handler_2 as Func<dynamic, T>;
         }
-
+        
         public T Call(object invoker)
         {
-            if (ObjectType != null && invoker?.GetType() != ObjectType)
+            if (Handler != null)
+                return Handler(Parameters[0]);
+            else if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
             else if (IsAsync)
                 return CallAsync(invoker).GetAwaiter().GetResult();
@@ -62,6 +67,7 @@ namespace Albion
         {
             return await CallAsync(null);
         }
+
     }
 
     public class Answer : IAnswer
@@ -73,6 +79,32 @@ namespace Albion
 
         internal MethodInfo Method { get; set; }
         internal object[] Parameters { get; set; }
+
+        internal Action<dynamic> Handler_1 { get; set; }
+        internal Func<dynamic, object> Handler_2 { get; set; }
+
+        internal Answer(Action<dynamic> handler, object parameter)
+        {
+            var method = handler.GetMethodInfo();
+
+            IsAsync = false;
+            ReturnType = typeof(void);
+            Method = method;
+            Parameters = new object[] { parameter };
+            ObjectType = null;
+            Handler_1 = handler;
+        }
+
+        internal Answer(Func<dynamic, object> handler, object parameter)
+        {
+            var method = handler.GetMethodInfo();
+            IsAsync = false;
+            ReturnType = method.ReturnType;
+            Method = method;
+            Parameters = new object[] { parameter };
+            ObjectType = null;
+            Handler_2 = handler;
+        }
 
         internal Answer(MethodInfo method, object[] parameters)
         {
@@ -105,7 +137,9 @@ namespace Albion
 
         public T Call<T>(object invoker)
         {
-            if (ObjectType != null && invoker?.GetType() != ObjectType)
+            if (Handler_2 != null && ReturnType == typeof(T))
+                return (T)Handler_2(Parameters[0]);
+            else if (Handler_1 != null || ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
             else if (IsAsync)
                 return CallAsync<T>(invoker).GetAwaiter().GetResult();
@@ -117,7 +151,14 @@ namespace Albion
 
         public object Call(object invoker)
         {
-            if (ObjectType != null && invoker?.GetType() != ObjectType)
+            if (Handler_1 != null)
+            {
+                Handler_1(Parameters[0]);
+                return null;
+            }
+            else if (Handler_2 != null)
+                return Handler_2(Parameters[0]);
+            else if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
             else if (IsAsync)
                 return CallAsync(invoker).GetAwaiter().GetResult();

@@ -54,6 +54,26 @@ namespace Albion
             Language = lang;
         }
 
+        public SentenceBuilder Build()
+        {
+            return Build(Language);
+        }
+
+        public SentenceBuilder Build(string lang)
+        {
+            return new SentenceBuilder(this, lang);
+        }
+
+        public void Clear()
+        {
+            Sentences.Clear();
+        }
+
+        internal void Register(SentenceParser parser)
+        {
+            Sentences.Push(parser);
+        }
+
         public void Register(params Type[] extensions)
         {
             foreach (Type ex in extensions)

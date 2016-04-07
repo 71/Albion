@@ -31,7 +31,15 @@ namespace Albion.Tests
                 () => engine.Ask<string>("Whatever").ShouldNotBeNull(),
                 () => engine.Ask("What's your name?").Call(customObj).ShouldBe("My name is Greg"),
 
-                () => engine.Suggest("Order som").ShouldNotBeEmpty()
+                () => engine.Suggest("Order som").ShouldNotBeEmpty(),
+
+                () => engine.Clear(),
+
+                () => engine.Build()
+                            .Sentence("Hello {you}", you => you.IsType<string>())
+                            .Handler(o => "Hey, " + o.you),
+
+                () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg")
             );
 
             Console.WriteLine("Test pass successful. Enter 'exit' to quit.");

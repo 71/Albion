@@ -1,0 +1,19 @@
+extends layout.jade
+
+block content
+    #notice
+        p Sorry, but this website is only available for javascript users. Don't worry, there are no ads nor trackers. Only some fancy animations.
+    
+    section.intro(tabindex='1')
+        h1.title #[img.logo(src='img/logo.png')] #{main}
+        p= intro
+        
+    section.example(tabindex='2')
+        .ex
+            .exinbox
+                input#exin(type='text', readonly)
+            .exarea
+                textarea
+    
+    section.tryitout(tabindex='3')
+        

@@ -1,0 +1,75 @@
+@import 'jeet'
+@import 'mixins'
+
+$wide = '(min-width: 1650px)'
+$unwide = '(max-width: 1650px)'
+$portrait = '(orientation: portrait)'
+$landscape = '(orientation: landscape)'
+
+$serif = 'Georgia', serif
+$sans-serif = 'Open Sans', 'Segoe UI', 'Roboto', sans-serif
+
+$bg = #000
+$title = #fff
+$subtitle = #ffe
+$body = #ffa
+
+body
+    margin: 0
+    background: linear-gradient(#06061c, #06061c, #06061c, #0d212e, #18342f)
+    overflow: hidden
+
+    #notice
+        display: none
+        height: 100%
+        width: 100%
+        text-align: center
+        background-color: rgba(0,0,0,.8)
+        position: fixed
+        z-index: 101
+
+body.nojs
+    #notice
+        display: block
+
+.ex
+    height: 500px
+    overflow: hidden
+
+    .exinbox, .exarea
+        width: 100%
+        height: inherit
+        position: absolute
+        transition: transform .8s ease-out
+
+    .exinbox
+        margin: auto
+        text-align: center
+        background-color: black
+        z-index: 1
+
+        input
+            background-color: white
+            border: none
+            width: 400px
+            text-align: center
+            margin: auto 100px
+            padding: .5em
+            font-size: larger
+            margin-top: 200px
+
+    .exarea
+        transform: translateX(100%)
+        z-index: 2
+
+h1, h2, h3
+    font-family: $sans-serif
+    font-weight: lighter
+    margin: 0
+    color: white
+
+h1.title, h2.title
+    img
+        width: 1em
+        margin-bottom: -.15em
+        margin-right: .1em

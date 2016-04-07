@@ -41,6 +41,7 @@
     <Compile Include="Attributes\ParserAttribute.cs" />
     <Compile Include="Attributes\TypeParserAttribute.cs" />
     <Compile Include="Attributes\SentenceAttribute.cs" />
+    <Compile Include="DynamicDictionary.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Parsers\ArrayParser.cs" />
     <Compile Include="Parsers\Converters\Strings.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Parsers\StaticStringParser.cs" />
     <Compile Include="Parsers\StringParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SentenceBuilder.cs" />
     <Compile Include="SentenceParser.cs" />
     <Compile Include="Suggestion.cs" />
   </ItemGroup>
