@@ -105,6 +105,25 @@ namespace Albion
         /// <returns>this</returns>
         public SentenceBuilder Sentence(string lang, string sentence, params Expression<Func<SentenceBuilderParameter, SentenceBuilderParameter>>[] parameters)
         {
+            byte op = 0;
+            foreach (char c in sentence)
+            {
+                if (op == 0) // normal text
+                {
+                    if (c == '{') op = 1;
+                    else if (c == '}') throw new FormatException("Invalid format in sentence '" + sentence + "'.");
+                }
+                else if (op == 1) // variable name ; must no contain characters other than [\d\w_]
+                {
+                    if (c == '}') op = 0;
+                    else if (char.IsLetterOrDigit(c) || c == '_') continue;
+                    else throw new FormatException("Invalid format in sentence '" + sentence + "'.");
+                }
+            }
+
+            if (op == 1)
+                throw new FormatException("Invalid format in sentence '" + sentence + "'.");
+
             sentenceLanguages.Add(sentence, lang);
             sentences.Add(sentence, GetParameters(parameters).ToDictionary(x => x.Key, x => x.Value));
             return this;
