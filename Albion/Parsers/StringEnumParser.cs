@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
+
+#pragma warning disable 1591
     public class StringEnumParser : TypeParser<string>
     {
         private string[] possibilities;

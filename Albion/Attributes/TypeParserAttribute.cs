@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace Albion.Attributes
 {
     /// <summary>
-    /// Indicates that this class can parse strings.
+    /// Indicates that this class can parse phrases of a sentence.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class TypeParserAttribute : Attribute
     {
-        public TypeParserAttribute()
-        {
-
-        }
+        /// <summary>
+        /// Initialize a new <see cref="TypeParserAttribute"/>.
+        /// </summary>
+        public TypeParserAttribute() { }
     }
 }

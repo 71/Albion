@@ -28,7 +28,11 @@ namespace Albion.Parsers
         public List<string> ParametersName { get; private set; }
         public List<string[]> CustomSuggestions { get; private set; }
         public MethodInfo Method { get; private set; }
-        public SentenceAttribute Attribute { get; private set; }
+
+        public string SentenceDescription { get; private set; }
+        public string SentenceID { get; private set; }
+        public string SentenceLanguage { get; private set; }
+        public string[] Templates { get; private set; }
 
         public string Full
         {
@@ -38,31 +42,39 @@ namespace Albion.Parsers
             }
         }
 
-        internal SentenceParser(List<IParser> tokens, List<string> names, Func<dynamic, object> deleg, List<string[]> suggestions, string sentence, string lang, string descr)
+        internal SentenceParser(List<IParser> tokens, List<string> names, Func<dynamic, object> deleg, List<string[]> suggestions, string sentence, string lang, string descr, string id)
         {
             var info = deleg.GetMethodInfo();
+
+            SentenceLanguage = lang;
+            SentenceDescription = descr;
+            SentenceID = id;
+            Templates = new string[] { sentence };
 
             Method = info;
             ParametersName = names;
             Parameters = info.GetParameters();
             Tokens = tokens;
             ReturnType = info.ReturnType;
-            Attribute = new SentenceAttribute(sentence) { Description = descr, Language = lang };
             CustomSuggestions = suggestions;
             m_built = true;
             m_func = deleg;
         }
 
-        internal SentenceParser(List<IParser> tokens, List<string> names, Action<dynamic> deleg, List<string[]> suggestions, string sentence, string lang, string descr)
+        internal SentenceParser(List<IParser> tokens, List<string> names, Action<dynamic> deleg, List<string[]> suggestions, string sentence, string lang, string descr, string id)
         {
             var info = deleg.GetMethodInfo();
+
+            SentenceLanguage = lang;
+            SentenceDescription = descr;
+            SentenceID = id;
+            Templates = new string[] { sentence };
 
             Method = info;
             ParametersName = names;
             Parameters = info.GetParameters();
             Tokens = tokens;
             ReturnType = info.ReturnType;
-            Attribute = new SentenceAttribute(sentence) { Description = descr, Language = lang };
             CustomSuggestions = suggestions;
             m_built = true;
             m_action = deleg;
@@ -70,12 +82,16 @@ namespace Albion.Parsers
 
         private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr, List<string[]> suggestions)
         {
+            SentenceLanguage = attr.Language;
+            SentenceDescription = attr.Description;
+            SentenceID = attr.ID;
+            Templates = attr.Sentences;
+
             Method = info;
             ParametersName = names;
             Parameters = info.GetParameters();
             Tokens = tokens;
             ReturnType = info.ReturnType;
-            Attribute = attr;
             CustomSuggestions = suggestions;
             m_built = false;
         }
@@ -183,9 +199,9 @@ namespace Albion.Parsers
                                 test = test.Substring(del);
                                 i++;
                             }
-                            else // no support for chained variables yet
+                            else // no support for chained variables
                             {
-                                throw new NotImplementedException("no support for chained variables yet");
+                                throw new NotImplementedException("no support for chained variables");
                             }
                         }
                         else // during
@@ -217,7 +233,7 @@ namespace Albion.Parsers
                                 test = test.Substring(del);
                                 i++;
                             }
-                            else // no support for chained variables yet
+                            else // no support for chained variables
                             {
                                 throw new NotImplementedException("no support for chained variables yet");
                             }
@@ -313,8 +329,8 @@ namespace Albion.Parsers
                 }
 
                 answer = m_action == null
-                    ? new Answer(m_func, new DynamicDictionary(dic))
-                    : new Answer(m_action, new DynamicDictionary(dic));
+                    ? new Answer(m_func, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID)
+                    : new Answer(m_action, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID);
             }
             else
             {
@@ -324,7 +340,12 @@ namespace Albion.Parsers
                 {
                     if (Parameters[o].ParameterType == typeof(SentenceAttribute))
                     {
-                        orderedParameters[o] = Attribute;
+                        orderedParameters[o] = new SentenceAttribute(Templates)
+                        {
+                            Description = SentenceDescription,
+                            ID = SentenceID,
+                            Language = SentenceLanguage
+                        };
                     }
                 }
 
@@ -355,7 +376,7 @@ namespace Albion.Parsers
                     i++;
                 }
 
-                answer = new Answer(Method, orderedParameters);
+                answer = new Answer(Method, orderedParameters, SentenceLanguage, SentenceDescription, SentenceID);
             }
             return true;
         }

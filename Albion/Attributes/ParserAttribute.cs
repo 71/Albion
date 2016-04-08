@@ -7,22 +7,42 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Albion.Attributes
+namespace Albion
 {
+    /// <summary>
+    /// This attribute indicates that the following parameter will be parsed specifically,
+    /// and may contain custom examples used when calling <see cref="Engine.Suggest(string)"/>.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
     public class ParserAttribute : Attribute
     {
-        protected string[] examples = new string[0];
+        /// <summary>
+        /// Custom examples used when calling <see cref="Engine.Suggest(string)"/>.
+        /// </summary>
         public string[] Examples { get { return examples; } set { examples = value; } }
+        private string[] examples = new string[0];
 
-        protected IParser customParser = null;
+        /// <summary>
+        /// Custom <see cref="IParser"/> for the type of the parameter
+        /// </summary>
         public IParser CustomParser { get { return customParser; } }
+        private IParser customParser = null;
 
+        /// <summary>
+        /// Indicates that the following parameter will have the custom examples <see cref="Examples"/>.
+        /// Not giving <see cref="Examples"/> is useless when using this constructor.
+        /// </summary>
         public ParserAttribute()
         {
 
         }
 
+        /// <summary>
+        /// Indicates that the following parameter will be parsed using the parser <paramref name="parser"/>,
+        /// which will be constructedd using the parameters <paramref name="ctorParameters"/>.
+        /// </summary>
+        /// <param name="parser"></param>
+        /// <param name="ctorParameters"></param>
         public ParserAttribute(Type parser, params object[] ctorParameters)
         {
             if (parser != null && parser.GetTypeInfo().ImplementedInterfaces.Contains(typeof(IParser)))

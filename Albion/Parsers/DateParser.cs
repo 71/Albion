@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
+#pragma warning disable 1591
     [TypeParser]
     public class DateTimeParser : TypeParser<DateTime>
     {

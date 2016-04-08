@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Albion.Attributes;
 
+#pragma warning disable 1591
+
 namespace Albion.Parsers
 {
     [TypeParser]

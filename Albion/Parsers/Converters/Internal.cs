@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+#pragma warning disable 1591
+
 namespace Albion.Parsers
 {
     internal static partial class Converters

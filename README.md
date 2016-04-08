@@ -26,11 +26,11 @@ public static string RemindMeIn(string todo, TimeSpan time)
 #### It's easy to use
 ````csharp
 Engine engine = new Engine();
-engine.Subscribe(typeof(Reminders));
+engine.Register(typeof(Reminders));
 Answer a = engine.Ask("Remind me to go to the store to buy chocolates in two days, one hour and fifteen minutes.");
-if (a.Failed)
-    Console.WriteLine(a.Error);
-else if (a.Returns == typeof(string))
+if (a == null)
+    Console.WriteLine("No match found");
+else if (a.ReturnType == typeof(string))
     Console.WriteLine(a.Call());
 ````
 #### Way more than that

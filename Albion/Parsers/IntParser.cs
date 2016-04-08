@@ -8,6 +8,7 @@ using Albion.Attributes;
 
 namespace Albion.Parsers
 {
+#pragma warning disable 1591
     [TypeParser]
     public class IntParser : TypeParser<int>
     {

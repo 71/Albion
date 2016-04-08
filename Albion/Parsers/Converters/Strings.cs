@@ -13,7 +13,6 @@ namespace Albion.Parsers
         /// Returns a string formatted using String.Format(), and with an s in plural words.
         /// </summary>
         /// <param name="s">The string to format, where things are singular</param>
-        /// <param name="filter">True if the integers should be written in letters</param>
         /// <param name="args">The arguments to format</param>
         public static string Plural(this string s, params object[] args)
         {

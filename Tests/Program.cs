@@ -26,6 +26,7 @@ namespace Albion.Tests
                 () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg"),
                 () => engine.Ask("Bonjour Greg").Call().ShouldBe("No match found"),
                 () => engine.Ask("Bonjour Greg", "fr").Call().ShouldBe("Salut, Greg"),
+                () => engine.Ask("Bonjour Greg", "*").Call().ShouldBe("Salut, Greg"),
                 () => engine.Ask("In ten hours and ten minutes, remind me to get flowers").Call().ShouldBe("I'll remind you to get flowers in 610 minutes"),
                 () => engine.Ask("Remind me to eat").Call<string>().ShouldBe("I'll remind you to eat"),
                 () => engine.Ask<string>("Whatever").ShouldNotBeNull(),
@@ -39,6 +40,9 @@ namespace Albion.Tests
                             .Sentence("Hello {you}", you => you.IsType<string>())
                             .Handler(o => "Hey, " + o.you),
 
+                () => engine.Suggest("Hello Gr").ShouldNotBeEmpty(),
+
+                () => engine.Ask<string>("Hello Greg").Call().ShouldBe("Hey, Greg"),
                 () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg")
             );
 
