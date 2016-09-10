@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Albion.Attributes
+namespace Albion
 {
     /// <summary>
     /// Indicates that this class can parse phrases of a sentence.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class TypeParserAttribute : Attribute
+    public class PhraseParserAttribute : Attribute
     {
         /// <summary>
-        /// Initialize a new <see cref="TypeParserAttribute"/>.
+        /// Initialize a new <see cref="PhraseParserAttribute"/>.
         /// </summary>
-        public TypeParserAttribute() { }
+        public PhraseParserAttribute() { }
     }
 }

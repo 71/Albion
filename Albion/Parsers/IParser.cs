@@ -1,5 +1,4 @@
-﻿using Albion.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +22,7 @@ namespace Albion.Parsers
 
     /// <summary>
     /// A base class for parsers.
-    /// If you want your custom to be registered as a default parser, add the <see cref="TypeParserAttribute"/> attribute to it.
+    /// If you want your custom to be registered as a default parser, add the <see cref="PhraseParserAttribute"/> attribute to it.
     /// </summary>
     /// <typeparam name="T">The <see cref="Type"/> to which to parse</typeparam>
     public abstract class TypeParser<T> : IParser

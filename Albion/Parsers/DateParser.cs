@@ -1,5 +1,4 @@
-﻿using Albion.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 namespace Albion.Parsers
 {
 #pragma warning disable 1591
-    [TypeParser]
+    [PhraseParser]
     public class DateTimeParser : TypeParser<DateTime>
     {
         public override int Coeff { get { return 100; } }

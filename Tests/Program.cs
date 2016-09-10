@@ -30,7 +30,9 @@ namespace Albion.Tests
                 () => engine.Ask("In ten hours and ten minutes, remind me to get flowers").Call().ShouldBe("I'll remind you to get flowers in 610 minutes"),
                 () => engine.Ask("Remind me to eat").Call<string>().ShouldBe("I'll remind you to eat"),
                 () => engine.Ask<string>("Whatever").ShouldNotBeNull(),
-                () => engine.Ask("What's your name?").Call(customObj).ShouldBe("My name is Greg"),
+                () => engine.Ask("What's your name?").Call(customObj).ShouldBe("Your name is Greg"),
+                () => engine.Ask("What's her name?").Call(customObj).ShouldBe("Her name is Greg"),
+                () => engine.Ask("What's mine name?").Call(customObj).ShouldBe("No match found"),
 
                 () => engine.Suggest("Order som").ShouldNotBeEmpty(),
 

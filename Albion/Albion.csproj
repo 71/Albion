@@ -50,6 +50,7 @@
     <Compile Include="Parsers\Converters\Internal.cs" />
     <Compile Include="Parsers\IntParser.cs" />
     <Compile Include="Parsers\IParser.cs" />
+    <Compile Include="Parsers\MatchParser.cs" />
     <Compile Include="Parsers\StringEnumParser.cs" />
     <Compile Include="Parsers\TimeSpanParser.cs" />
     <Compile Include="Parsers\StaticStringParser.cs" />

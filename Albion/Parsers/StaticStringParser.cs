@@ -1,5 +1,4 @@
-﻿using Albion.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
-    [TypeParser]
+    [PhraseParser]
     public class StaticStringParser : TypeParser<string>
     {
         public override int Coeff { get { return 10000; } }

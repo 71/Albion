@@ -12,10 +12,10 @@ namespace Albion.Tests
         /// <summary>
         /// Support for dynamic objects
         /// </summary>
-        [Sentence("What's your name?")]
-        public string MyName()
+        [Sentence("What's {pronoun} name?")]
+        public string MyName([Any("my", "your", "his", "her", "its", "our", "their")] string pronoun)
         {
-            return "My name is " + Name;
+            return char.ToUpper(pronoun[0]) + pronoun.Substring(1) + " name is " + Name;
         }
     }
 
@@ -46,7 +46,7 @@ namespace Albion.Tests
         /// Custom parsers!
         /// </summary>
         [Sentence("Order {food}", "Order some {food}")]
-        public static string Order([Parser(typeof(StringEnumParser), false, true, true, new [] { "eggs?", "tomato(es)?", "bacon" })] string food)
+        public static string Order([Parser(typeof(StringEnumParser), "eggs?", "tomato(es)?", "bacon")] string food)
         {
             return "Alright, we'll buy some " + food + ".";
         }

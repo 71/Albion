@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Albion.Attributes;
 
 namespace Albion.Parsers
 {
 #pragma warning disable 1591
-    [TypeParser]
+    [PhraseParser]
     public class IntParser : TypeParser<int>
     {
         public override int Coeff { get { return 100; } }

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Albion.Attributes;
 
 #pragma warning disable 1591
 
 namespace Albion.Parsers
 {
-    [TypeParser]
+    [PhraseParser]
     public class TimeSpanParser : TypeParser<TimeSpan>
     {
         public override int Coeff { get { return 100; } }

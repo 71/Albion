@@ -1,5 +1,4 @@
-﻿using Albion.Attributes;
-using Albion.Parsers;
+﻿using Albion.Parsers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -492,7 +491,7 @@ namespace Albion.Parsers
                         throw new Exception($"Cannot find a parser for type {para.ParameterType}");
 
                     parsers.Add(parser);
-                    suggestions.Add((attr != null && attr.Examples.Length > 0) ? attr.Examples : parser.Examples.ToArray());
+                    suggestions.Add((attr != null && attr.Examples != null && attr.Examples.Length > 0) ? attr.Examples : parser.Examples.ToArray());
                     names.Add(block);
 
                     op = 0;
