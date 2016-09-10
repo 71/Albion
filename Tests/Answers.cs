@@ -1,10 +1,5 @@
-﻿using Albion.Attributes;
-using Albion.Parsers;
+﻿using Albion.Parsers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Albion.Tests
 {
@@ -51,7 +46,7 @@ namespace Albion.Tests
         /// Custom parsers!
         /// </summary>
         [Sentence("Order {food}", "Order some {food}")]
-        public static string Order([Parser(typeof(StringEnumParser), false, true, true, new [] { "eggs?", "tomato(es)?", "bacon" })]string food)
+        public static string Order([Parser(typeof(StringEnumParser), false, true, true, new [] { "eggs?", "tomato(es)?", "bacon" })] string food)
         {
             return "Alright, we'll buy some " + food + ".";
         }
@@ -60,7 +55,7 @@ namespace Albion.Tests
         /// Different priorities: this method matches with *everything*, but is only called if nothing else if found.
         /// If such a method does not exist, hello.Answer("") will return null.
         /// </summary>
-        [Sentence("{anything}")]
+        [Sentence("{anything}", ID = "annoying")]
         public static string Anything(string anything)
         {
             return "No match found";

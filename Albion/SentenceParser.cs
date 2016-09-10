@@ -38,7 +38,9 @@ namespace Albion.Parsers
         {
             get
             {
-                return string.Join("", CustomSuggestions == null ? new string[0] : CustomSuggestions.Select(x => AnyOf(x)));
+                if (CustomSuggestions == null || CustomSuggestions.Count == 0)
+                    return AnyOf(Templates);
+                return string.Join("", CustomSuggestions.Select(x => AnyOf(x)));
             }
         }
 
@@ -137,7 +139,7 @@ namespace Albion.Parsers
                             if (del > 0)
                             {
                                 op = 1;
-                                test = test.Substring((token as StaticStringParser).Reference.Length);
+                                test = test.Substring(del);
                             }
                             else if (!deep)
                             {
@@ -309,7 +311,7 @@ namespace Albion.Parsers
             return coeff;
         }
 
-        internal bool TryFinaleParse(Dictionary<int, string> vars, out Answer answer)
+        internal bool TryFinaleParse(Engine en, Dictionary<int, string> vars, out Answer answer)
         {
             answer = null;
 
@@ -329,8 +331,8 @@ namespace Albion.Parsers
                 }
 
                 answer = m_action == null
-                    ? new Answer(m_func, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID)
-                    : new Answer(m_action, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID);
+                    ? new Answer(m_func, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID, en)
+                    : new Answer(m_action, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID, en);
             }
             else
             {
@@ -356,8 +358,15 @@ namespace Albion.Parsers
                     if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
                     {
                         int pos = 0;
-                        while (Parameters[pos].Name != ParametersName[pair.Key])
-                            pos++;
+                        try
+                        {
+                            while (Parameters[pos].Name != ParametersName[pair.Key])
+                                pos++;
+                        }
+                        catch (Exception)
+                        {
+                            throw new Exception($"Expected a parameter named '{ParametersName[pair.Key]}'");
+                        }
 
                         if (parameter == null)
                         {
@@ -376,7 +385,7 @@ namespace Albion.Parsers
                     i++;
                 }
 
-                answer = new Answer(Method, orderedParameters, SentenceLanguage, SentenceDescription, SentenceID);
+                answer = new Answer(Method, orderedParameters, SentenceLanguage, SentenceDescription, SentenceID, en);
             }
             return true;
         }
@@ -416,14 +425,15 @@ namespace Albion.Parsers
                     if (block.Length > 0)
                     {
                         parsers.Add(new StaticStringParser(block));
+                        suggestions.Add(new string[] { block });
                         names.Add(null);
+
                         block = String.Empty;
                     }
                     op = 1;
                 }
                 else if (c == '}' && op == 1)
                 {
-                    block = block.ToLower();
                     IParser parser = parameters[block].Parser;
 
                     parsers.Add(parser);
@@ -442,6 +452,7 @@ namespace Albion.Parsers
             if (!String.IsNullOrWhiteSpace(block))
             {
                 parsers.Add(new StaticStringParser(block));
+                suggestions.Add(new string[] { block });
                 names.Add(null);
             }
 
@@ -464,6 +475,7 @@ namespace Albion.Parsers
                     if (block.Length > 0)
                     {
                         parsers.Add(new StaticStringParser(block));
+                        suggestions.Add(new string[] { block });
                         names.Add(null);
                         block = String.Empty;
                     }
@@ -471,14 +483,16 @@ namespace Albion.Parsers
                 }
                 else if (c == '}' && op == 1)
                 {
-                    block = block.ToLower();
-                    ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block);
+                    ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block.ToLower());
                     ParserAttribute attr = para.GetCustomAttribute<ParserAttribute>();
 
                     IParser parser = attr?.CustomParser ?? Engine.GetParserForParameter(para.ParameterType);
 
+                    if (parser == null)
+                        throw new Exception($"Cannot find a parser for type {para.ParameterType}");
+
                     parsers.Add(parser);
-                    suggestions.Add(attr != null && attr.Examples.Length > 0 ? attr.Examples : parser.Examples.ToArray());
+                    suggestions.Add((attr != null && attr.Examples.Length > 0) ? attr.Examples : parser.Examples.ToArray());
                     names.Add(block);
 
                     op = 0;
@@ -493,6 +507,7 @@ namespace Albion.Parsers
             if (!String.IsNullOrWhiteSpace(block))
             {
                 parsers.Add(new StaticStringParser(block));
+                suggestions.Add(new string[] { block });
                 names.Add(null);
             }
 

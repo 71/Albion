@@ -26,7 +26,8 @@ namespace Albion.Parsers
 
         public int MatchLength(string s)
         {
-            return s.ToLower().StartsWith(Reference) ? Reference.Length : 0;
+            s = s.ToLower();
+            return s.ToLower().StartsWith(Reference) ? Reference.Length : Reference.StartsWith(s) ? s.Length : 0;
         }
     }
 }

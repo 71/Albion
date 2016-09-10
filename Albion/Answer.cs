@@ -44,6 +44,8 @@ namespace Albion
         
         internal Func<dynamic, object> Handler { get; set; }
 
+        internal Engine Owner { get; set; }
+
         internal Answer(Answer a)
         {
             Language = a.Language;
@@ -55,6 +57,31 @@ namespace Albion
             Parameters = a.Parameters;
             ObjectType = a.ObjectType;
             Handler = a.Handler_2;
+            Owner = a.Owner;
+        }
+
+        /// <summary>
+        /// Call the method, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public T Call()
+        {
+            if (Owner == null)
+                return Call(null);
+            else
+                return Call(Owner.InstanceFor(ObjectType));
+        }
+
+        /// <summary>
+        /// Call the method asynchronously, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public async Task<T> CallAsync()
+        {
+            if (Owner == null)
+                return await CallAsync(null);
+            else
+                return await CallAsync(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -87,24 +114,6 @@ namespace Albion
                 return Call(invoker);
             else
                 return await (Task<T>)Method.Invoke(invoker, Parameters);
-        }
-
-        /// <summary>
-        /// Call the static method.
-        /// </summary>
-        /// <returns></returns>
-        public T Call()
-        {
-            return Call(null);
-        }
-
-        /// <summary>
-        /// Call the static method asynchronously.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<T> CallAsync()
-        {
-            return await CallAsync(null);
         }
     }
 
@@ -145,7 +154,9 @@ namespace Albion
         internal Action<dynamic> Handler_1 { get; set; }
         internal Func<dynamic, object> Handler_2 { get; set; }
 
-        internal Answer(Action<dynamic> handler, object parameter, string lang, string descr, string id)
+        internal Engine Owner { get; set; }
+
+        internal Answer(Action<dynamic> handler, object parameter, string lang, string descr, string id, Engine en)
         {
             var method = handler.GetMethodInfo();
 
@@ -159,9 +170,10 @@ namespace Albion
             Parameters = new object[] { parameter };
             ObjectType = null;
             Handler_1 = handler;
+            Owner = en;
         }
 
-        internal Answer(Func<dynamic, object> handler, object parameter, string lang, string descr, string id)
+        internal Answer(Func<dynamic, object> handler, object parameter, string lang, string descr, string id, Engine en)
         {
             var method = handler.GetMethodInfo();
 
@@ -175,9 +187,10 @@ namespace Albion
             Parameters = new object[] { parameter };
             ObjectType = null;
             Handler_2 = handler;
+            Owner = en;
         }
 
-        internal Answer(MethodInfo method, object[] parameters, string lang, string descr, string id)
+        internal Answer(MethodInfo method, object[] parameters, string lang, string descr, string id, Engine en)
         {
             Description = descr;
             ID = id;
@@ -188,44 +201,55 @@ namespace Albion
             Method = method;
             Parameters = parameters;
             ObjectType = method.IsStatic ? null : method.DeclaringType;
+            Owner = en;
         }
-
+        
         /// <summary>
-        /// Call the static method, and cast the result to T.
+        /// Call the method, trying to automagically resolve
+        /// its instance if it isn't static.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidCastException"></exception>
-        public T Call<T>()
-        {
-            return Call<T>(null);
-        }
-
-        /// <summary>
-        /// Call the static method.
-        /// </summary>
-        /// <returns></returns>
         public object Call()
         {
-            return Call(null);
+            if (Owner == null)
+                return Call(null);
+            else
+                return Call(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
-        /// Call the static method asynchronously, and cast the result to T.
+        /// Call the method asynchronously, trying to automagically resolve
+        /// its instance if it isn't static.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidCastException"></exception>
-        public async Task<T> CallAsync<T>()
-        {
-            return await CallAsync<T>(null);
-        }
-
-        /// <summary>
-        /// Call the static method asynchronously.
-        /// </summary>
-        /// <returns></returns>
         public async Task<object> CallAsync()
         {
-            return await CallAsync(null);
+            if (Owner == null)
+                return await CallAsync(null);
+            else
+                return await CallAsync(Owner.InstanceFor(ObjectType));
+        }
+        
+        /// <summary>
+        /// Call the method, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public T Call<T>()
+        {
+            if (Owner == null)
+                return Call<T>(null);
+            else
+                return Call<T>(Owner.InstanceFor(ObjectType));
+        }
+
+        /// <summary>
+        /// Call the method asynchronously, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public async Task<T> CallAsync<T>()
+        {
+            if (Owner == null)
+                return await CallAsync<T>(null);
+            else
+                return await CallAsync<T>(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace Albion
 
                 var typeInfo = typeof(IParser).GetTypeInfo();
 
-                foreach (TypeInfo t in typeInfo.Assembly.DefinedTypes)
+                foreach (TypeInfo t in target.GetTypeInfo().Assembly.DefinedTypes.Concat(typeInfo.Assembly.DefinedTypes))
                 {
                     if (!t.IsAbstract
                         && t.ImplementedInterfaces.Contains(typeof(IParser))
@@ -47,7 +47,8 @@ namespace Albion
             return _parsers.FirstOrDefault(x => x.ParseTo == target);
         }
 
-        private Stack<SentenceParser> Sentences { get; set; }
+        private readonly Stack<SentenceParser> Sentences;
+        private readonly Stack<object> Instances;
 
         /// <summary>
         /// Default Language used by <see cref="Ask(string)"/> and <see cref="Suggest(string)"/>.
@@ -65,6 +66,7 @@ namespace Albion
         public Engine(string lang)
         {
             Sentences = new Stack<SentenceParser>();
+            Instances = new Stack<object>();
             Language = lang;
         }
 
@@ -91,11 +93,22 @@ namespace Albion
         public void Clear()
         {
             Sentences.Clear();
+            Instances.Clear();
         }
 
         internal void Register(SentenceParser parser)
         {
             Sentences.Push(parser);
+        }
+
+        internal object InstanceFor(Type t)
+        {
+            foreach (object instance in Instances)
+            {
+                if (instance.GetType() == t)
+                    return t;
+            }
+            return null;
         }
 
         /// <summary>
@@ -117,6 +130,35 @@ namespace Albion
             }
         }
 
+        /// <summary>
+        /// Register and compile methods containing the <see cref="SentenceAttribute"/> attribute for future use,
+        /// via <see cref="Ask(string)"/> and <see cref="Suggest(string)"/>.
+        /// </summary>
+        public void Register<T>()
+        {
+            foreach (MethodInfo method in typeof(T).GetRuntimeMethods())
+            {
+                var parsers = SentenceParser.Generate(method);
+
+                foreach (SentenceParser parser in parsers)
+                    Sentences.Push(parser);
+            }
+        }
+
+        /// <summary>
+        /// Register and compile methods containing the <see cref="SentenceAttribute"/> attribute for future use,
+        /// via <see cref="Ask(string)"/> and <see cref="Suggest(string)"/>.
+        /// <para>
+        /// Additionally, save this instance, so <see cref="Answer.Call(object)"/>
+        /// automatically uses <paramref name="instance"/>.
+        /// </para>
+        /// </summary>
+        public void Register<T>(T instance)
+        {
+            Register<T>();
+            Instances.Push(instance);
+        }
+
         #region Ask
         private IEnumerable<Answer<T>> AskInternal<T>(string cleaninput, string lang)
         {
@@ -136,7 +178,7 @@ namespace Albion
             foreach (var sentence in sentences.OrderByDescending(x => x.Item2))
             {
                 Answer answer;
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
+                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out answer))
                 {
                     yield return new Answer<T>(answer);
                 }
@@ -162,7 +204,7 @@ namespace Albion
             {
                 Answer answer;
 
-                if (sentence.Item1.TryFinaleParse(sentence.Item3, out answer))
+                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out answer))
                 {
                     yield return answer;
                 }

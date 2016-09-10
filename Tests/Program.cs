@@ -46,15 +46,56 @@ namespace Albion.Tests
                 () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg")
             );
 
+            engine.Clear();
+            engine.Register(typeof(CustomStaticClass), typeof(CustomClass));
+
             Console.WriteLine("Test pass successful. Enter 'exit' to quit.");
 
-            string s;
-            while ((s = Console.ReadLine()) != "exit")
+            string cmd = "";
+            while (true)
             {
+                var key = Console.ReadKey();
+
                 Console.Clear();
-                foreach (Suggestion sugg in engine.Suggest(s, SuggestionMatchType.Deep | SuggestionMatchType.Sentence))
+
+                if (key.Key != ConsoleKey.Enter)
                 {
-                    Console.WriteLine(sugg.ToString());
+                    if (key.Key == ConsoleKey.Backspace)
+                    {
+                        if (cmd.Length > 0)
+                            cmd = cmd.Substring(0, cmd.Length - 1);
+                    }
+                    else
+                    {
+                        cmd += key.KeyChar;
+                    }
+
+                    Console.WriteLine(cmd);
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                    foreach (Suggestion s in engine.Suggest(cmd, "*", SuggestionMatchType.Normal | SuggestionMatchType.Sentence))
+                    {
+                        if (s.ID != "annoying")
+                            Console.WriteLine(s.ToString());
+                    }
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine(cmd);
+                    Console.WriteLine();
+
+                    if (cmd == "exit")
+                        Environment.Exit(0);
+
+                    Answer a = engine.Ask(cmd);
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    if (a != null && a.ReturnType != typeof(void))
+                        Console.WriteLine(a.Call(customObj));
+                    Console.ResetColor();
+
+                    cmd = "";
                 }
             }
         }
