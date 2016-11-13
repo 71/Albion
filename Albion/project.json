@@ -1,0 +1,33 @@
+﻿{
+    "title": "Albion",
+    "version": "0.9.9.3",
+    "authors": [ "Jee" ],
+    "description": "Natural language processing, with Attributes.",
+    "copyright": "Grégoire GEIS 2016",
+    "language": "en-US",
+    "packOptions": {
+        "owners": [ "Jee" ],
+        "licenseUrl": "https://github.com/6A/Albion/blob/master/LICENSE",
+        "projectUrl": "https://github.com/6A/Albion",
+        "requireLicenseAcceptance": false,
+        "releaseNotes": "Updated Project.json",
+        "tags": [ "natural", "language", "parser", "processing" ]
+    },
+    "supports": { },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "mscorlib": "",
+                "System": "",
+                "System.Core": ""
+              }
+        },
+        "netstandard1.1": {
+            "dependencies": {
+                "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+                "NETStandard.Library": "1.6.0",
+                "System.Dynamic.Runtime": "4.0.11"
+            }
+        }
+    }
+}

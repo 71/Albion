@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Albion")]
 [assembly: AssemblyDescription("Translating human-readable sentences to methods with parameters had never been so easy")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("idotjee")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Albion")]
-[assembly: AssemblyCopyright("Copyright © idotjee 2016")]
+[assembly: AssemblyCopyright("Copyright © Greg G. 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
@@ -26,5 +26,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.9.9.0")]
-[assembly: AssemblyFileVersion("0.9.9.0")]
+[assembly: AssemblyVersion("0.9.9.3")]
+[assembly: AssemblyFileVersion("0.9.9.3")]

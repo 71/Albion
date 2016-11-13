@@ -106,7 +106,7 @@ namespace Albion
             foreach (object instance in Instances)
             {
                 if (instance.GetType() == t)
-                    return t;
+                    return instance;
             }
             return null;
         }

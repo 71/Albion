@@ -45,7 +45,7 @@ namespace Albion
     public class Suggestion
     {
         /// <summary>
-        /// The description provided by <see cref="SentenceSentenceDescription"/> or <see cref="SentenceBuilder.Description(string)"/>.
+        /// The description provided by <see cref="SentenceAttribute.Description"/> or <see cref="SentenceBuilder.Description(string)"/>.
         /// </summary>
         public string Description { get; private set; }
         /// <summary>
@@ -53,7 +53,7 @@ namespace Albion
         /// </summary>
         public string Language { get; private set; }
         /// <summary>
-        /// The ID provided by <see cref="SentenceSentenceID"/> or <see cref="SentenceBuilder.ID(string)"/>.
+        /// The ID provided by <see cref="SentenceAttribute.ID"/> or <see cref="SentenceBuilder.ID(string)"/>.
         /// </summary>
         public string ID { get; private set; }
 
