@@ -14,14 +14,14 @@
     "getstarted": "LET'S GET STARTED!",
 
     "gosteps": [
-        "Check out the <a href=\"https://github.com/idotjee/Albion/wiki\" target='_blank'>wiki</a>",
-        "Check out the <a href=\"https://github.com/idotjee/Albion\" target='_blank'>source code</a>"
+        "Check out the <a href=\"https://github.com/6A/Albion/wiki\" target='_blank'>wiki</a>",
+        "Check out the <a href=\"https://github.com/6A/Albion\" target='_blank'>source code</a>"
     ],
 
     "footer": {
         "links": "Links:",
         "contactme": "Contact me:",
-        "box": "Source code is available on <a href='https://github.com/idotjee/idotjee.github.io' target='_blank'>GitHub</a>.<br>Made with <i>&hearts;</i> in Metz, France."
+        "box": "Source code is available on <a href='https://github.com/6A/6A.github.io' target='_blank'>GitHub</a>.<br>Made with <i>&hearts;</i> in Metz, France."
     },
 
     "notice": "Sorry, but this website is only available for javascript users. Don't worry, there are no ads nor trackers. Only some fancy animations."

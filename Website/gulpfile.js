@@ -67,7 +67,7 @@ gulp.task('typescript', function () {
 });
 
 gulp.task('publish', function () {
-    return gulp.src('./out/**/*').pipe(ghPages({ message: options.msg, branch: 'master' }));
+    return gulp.src('./out/**/*').pipe(ghPages({ message: options.msg, branch: 'gh-pages' }));
 });
 
 gulp.task('clean', function () {

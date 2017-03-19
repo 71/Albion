@@ -10,7 +10,8 @@ block content
         
     section.example(tabindex='2')
         .ex
-            input#exin(type='text', readonly)
+          include bg.jade
+          input#exin(type='text', readonly)
     
     section.tryitout(tabindex='3')
         h1= tryitout
@@ -33,7 +34,7 @@ block content
                     pre: code.
                         engine.Build(<i class="str">"fr-FR"</i>)
                               .Sentence(<i class="str">"<span class="spaces">    </span> essaie {quoi}"</i>, quoi <i class="operator">=&gt;</i> quoi.IsType<i class="operator">&lt;</i><i class="keywords">string</i><i class="operator">&gt;</i>())
-                              .Handler(o <i class="operator">=&gt;</i> <i class="str">"Tu essaies "</i> <i class="operator">+</i> o.quoi);
+                              .Handler(o <i class="operator">=&gt;</i> <i class="str">$"Tu essaies {o.quoi}"</i>);
             tr
                 td: h2 2.
                 td: h3= trysteps[1]
