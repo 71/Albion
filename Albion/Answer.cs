@@ -1,12 +1,144 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Albion
 {
+    /// <summary>
+    /// Represents a generic answer returned by <see cref="Engine.Ask(string)"/>.
+    /// </summary>
+    public class Answer<T>
+    {
+        internal readonly Engine owner;
+        internal readonly object target;
+        internal readonly object[] arguments;
+
+        /// <summary>
+        /// Gets the method that will be called to get a result.
+        /// </summary>
+        public MethodInfo Method { get; }
+
+        /// <summary>
+        /// The description provided by <see cref="SentenceAttribute.Description"/> or <see cref="SentenceBuilder.Description(string)"/>.
+        /// </summary>
+        public string Description { get; }
+
+        /// <summary>
+        /// The language of the matched sentence.
+        /// </summary>
+        public string Language { get; }
+
+        /// <summary>
+        /// The ID provided by <see cref="SentenceAttribute.ID"/> or <see cref="SentenceBuilder.ID(string)"/>.
+        /// </summary>
+        public string ID { get; }
+
+        /// <summary>
+        /// Whether this method should be called asynchronously.
+        /// </summary>
+        public bool IsAsync { get; }
+
+        /// <summary>
+        /// The <see cref="Type"/> of the object returned by <see cref="Call()"/>.
+        /// </summary>
+        public Type ReturnType => IsAsync ? Method.ReturnType.GenericTypeArguments[0] : Method.ReturnType;
+
+        /// <summary>
+        /// The <see cref="Type"/> of the class which defined the method to call.
+        /// </summary>
+        public Type ObjectType => Method.IsStatic ? null : Method.DeclaringType;
+
+
+        internal Answer(Engine engine, string description, string language, string id, MethodInfo method, object target, params object[] args)
+        {
+            Description = description;
+            Language = language;
+            ID = id;
+
+            IsAsync = typeof(Task).GetTypeInfo().IsAssignableFrom(method.ReturnType.GetTypeInfo());
+            Method = method;
+
+            this.owner = engine;
+            this.target = target;
+            this.arguments = args;
+
+            if (target == null && !method.IsStatic)
+                this.target = engine.InstanceFor(ObjectType);
+        }
+
+        /// <summary>
+        /// Call the method, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public T Call() => Call(target);
+
+        /// <summary>
+        /// Call the method asynchronously, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public async Task<T> CallAsync() => await CallAsync(target);
+
+        /// <summary>
+        /// Call the method, and cast the result to T.
+        /// </summary>
+        /// <param name="invoker">The object on which to invoke the method.</param>
+        /// <exception cref="InvalidCastException"></exception>
+        public T Call(object invoker) => IsAsync
+            ? CallAsync(invoker).GetAwaiter().GetResult()
+            : (T)Method.Invoke(invoker, arguments);
+
+        /// <summary>
+        /// Call the method asynchronously, and cast the result to T.
+        /// </summary>
+        /// <param name="invoker">The object on which to invoke the method.</param>
+        /// <exception cref="InvalidCastException"></exception>
+        public async Task<T> CallAsync(object invoker) => IsAsync
+            ? await (Task<T>)Method.Invoke(invoker, arguments)
+            : Call(invoker);
+    }
+
+    /// <summary>
+    /// Represents an answer returned by <see cref="Engine.Ask(string)"/>.
+    /// </summary>
+    public class Answer : Answer<object>
+    {
+        internal Answer(Engine engine, string description, string language, string id, MethodInfo method, object target, params object[] args)
+            : base(engine, description, language, id, method, target, args)
+        {
+        }
+
+        /// <summary>
+        /// Call the method, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public T Call<T>() => Call<T>(owner?.InstanceFor(ObjectType));
+
+        /// <summary>
+        /// Call the method asynchronously, trying to automagically resolve
+        /// its instance if it isn't static.
+        /// </summary>
+        public async Task<T> CallAsync<T>() => await CallAsync<T>(owner?.InstanceFor(ObjectType));
+
+        /// <summary>
+        /// Call the method, and cast the result to T.
+        /// </summary>
+        /// <param name="invoker">The object on which to invoke the method.</param>
+        /// <exception cref="InvalidCastException"></exception>
+        public T Call<T>(object invoker) => IsAsync
+            ? CallAsync<T>(invoker).GetAwaiter().GetResult()
+            : (T)Method.Invoke(invoker, arguments);
+
+        /// <summary>
+        /// Call the method asynchronously, and cast the result to T.
+        /// </summary>
+        /// <param name="invoker">The object on which to invoke the method.</param>
+        /// <exception cref="InvalidCastException"></exception>
+        public async Task<T> CallAsync<T>(object invoker) => IsAsync
+            ? await (Task<T>)Method.Invoke(invoker, arguments)
+            : Call<T>(invoker);
+    }
+
+#if false
     /// <summary>
     /// 
     /// </summary>
@@ -41,7 +173,7 @@ namespace Albion
 
         internal MethodInfo Method { get; set; }
         internal object[] Parameters { get; set; }
-        
+
         internal Func<dynamic, object> Handler { get; set; }
 
         internal Engine Owner { get; set; }
@@ -68,8 +200,7 @@ namespace Albion
         {
             if (Owner == null)
                 return Call(null);
-            else
-                return Call(Owner.InstanceFor(ObjectType));
+            return Call(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -80,8 +211,7 @@ namespace Albion
         {
             if (Owner == null)
                 return await CallAsync(null);
-            else
-                return await CallAsync(Owner.InstanceFor(ObjectType));
+            return await CallAsync(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -93,12 +223,11 @@ namespace Albion
         {
             if (Handler != null)
                 return (T)Handler(Parameters[0]);
-            else if (ObjectType != null && invoker?.GetType() != ObjectType)
+            if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (IsAsync)
+            if (IsAsync)
                 return CallAsync(invoker).GetAwaiter().GetResult();
-            else
-                return (T)Method.Invoke(invoker, Parameters);
+            return (T)Method.Invoke(invoker, Parameters);
         }
 
         /// <summary>
@@ -110,10 +239,9 @@ namespace Albion
         {
             if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (!IsAsync)
+            if (!IsAsync)
                 return Call(invoker);
-            else
-                return await (Task<T>)Method.Invoke(invoker, Parameters);
+            return await (Task<T>)Method.Invoke(invoker, Parameters);
         }
     }
 
@@ -134,7 +262,7 @@ namespace Albion
         /// The ID provided by <see cref="SentenceAttribute.ID"/> or <see cref="SentenceBuilder.ID(string)"/>.
         /// </summary>
         public string ID { get; private set; }
-        
+
         /// <summary>
         /// Whether this method should be called asynchronously.
         /// </summary>
@@ -167,7 +295,7 @@ namespace Albion
             IsAsync = false;
             ReturnType = typeof(void);
             Method = method;
-            Parameters = new object[] { parameter };
+            Parameters = new[] { parameter };
             ObjectType = null;
             Handler_1 = handler;
             Owner = en;
@@ -184,7 +312,7 @@ namespace Albion
             IsAsync = false;
             ReturnType = method.ReturnType;
             Method = method;
-            Parameters = new object[] { parameter };
+            Parameters = new[] { parameter };
             ObjectType = null;
             Handler_2 = handler;
             Owner = en;
@@ -196,14 +324,14 @@ namespace Albion
             ID = id;
             Language = lang;
 
-            IsAsync = method.ReturnType.FullName.StartsWith("System.Threading.Tasks.Task`1");
+            IsAsync = typeof(Task<>).GetTypeInfo().IsAssignableFrom(method.ReturnType.GetGenericTypeDefinition().GetTypeInfo());
             ReturnType = IsAsync ? method.ReturnType.GenericTypeArguments[0] : method.ReturnType;
             Method = method;
             Parameters = parameters;
             ObjectType = method.IsStatic ? null : method.DeclaringType;
             Owner = en;
         }
-        
+
         /// <summary>
         /// Call the method, trying to automagically resolve
         /// its instance if it isn't static.
@@ -212,8 +340,7 @@ namespace Albion
         {
             if (Owner == null)
                 return Call(null);
-            else
-                return Call(Owner.InstanceFor(ObjectType));
+            return Call(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -224,10 +351,9 @@ namespace Albion
         {
             if (Owner == null)
                 return await CallAsync(null);
-            else
-                return await CallAsync(Owner.InstanceFor(ObjectType));
+            return await CallAsync(Owner.InstanceFor(ObjectType));
         }
-        
+
         /// <summary>
         /// Call the method, trying to automagically resolve
         /// its instance if it isn't static.
@@ -236,8 +362,7 @@ namespace Albion
         {
             if (Owner == null)
                 return Call<T>(null);
-            else
-                return Call<T>(Owner.InstanceFor(ObjectType));
+            return Call<T>(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -248,8 +373,7 @@ namespace Albion
         {
             if (Owner == null)
                 return await CallAsync<T>(null);
-            else
-                return await CallAsync<T>(Owner.InstanceFor(ObjectType));
+            return await CallAsync<T>(Owner.InstanceFor(ObjectType));
         }
 
         /// <summary>
@@ -262,14 +386,13 @@ namespace Albion
         {
             if (Handler_2 != null && ReturnType == typeof(T))
                 return (T)Handler_2(Parameters[0]);
-            else if (Handler_1 != null || ObjectType != null && invoker?.GetType() != ObjectType)
+            if (Handler_1 != null || ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (IsAsync)
+            if (IsAsync)
                 return CallAsync<T>(invoker).GetAwaiter().GetResult();
-            else if (ReturnType != typeof(T))
-                throw new InvalidCastException(String.Format("{0} cannot be converted to {1}", Method.ReturnType, typeof(T)));
-            else
-                return (T)Method.Invoke(invoker, Parameters);
+            if (ReturnType != typeof(T))
+                throw new InvalidCastException($"{Method.ReturnType} cannot be converted to {typeof(T)}");
+            return (T)Method.Invoke(invoker, Parameters);
         }
 
         /// <summary>
@@ -285,14 +408,13 @@ namespace Albion
                 Handler_1(Parameters[0]);
                 return null;
             }
-            else if (Handler_2 != null)
+            if (Handler_2 != null)
                 return Handler_2(Parameters[0]);
-            else if (ObjectType != null && invoker?.GetType() != ObjectType)
+            if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (IsAsync)
+            if (IsAsync)
                 return CallAsync(invoker).GetAwaiter().GetResult();
-            else
-                return Method.Invoke(invoker, Parameters);
+            return Method.Invoke(invoker, Parameters);
         }
 
         /// <summary>
@@ -305,12 +427,11 @@ namespace Albion
         {
             if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (!IsAsync)
+            if (!IsAsync)
                 return Call<T>(invoker);
-            else if (ReturnType != typeof(T))
-                throw new InvalidCastException(String.Format("{0} cannot be converted to {1}", Method.ReturnType, typeof(T)));
-            else
-                return await (Task<T>)Method.Invoke(invoker, Parameters);
+            if (ReturnType != typeof(T))
+                throw new InvalidCastException($"{Method.ReturnType} cannot be converted to {typeof(T)}");
+            return await (Task<T>)Method.Invoke(invoker, Parameters);
         }
 
         /// <summary>
@@ -323,10 +444,10 @@ namespace Albion
         {
             if (ObjectType != null && invoker?.GetType() != ObjectType)
                 throw new InvalidCastException();
-            else if (!IsAsync)
+            if (!IsAsync)
                 return Call(invoker);
-            else
-                return await (Task<object>)Method.Invoke(invoker, Parameters);
+            return await (Task<object>)Method.Invoke(invoker, Parameters);
         }
     }
+#endif
 }

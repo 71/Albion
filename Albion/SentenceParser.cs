@@ -1,25 +1,19 @@
-﻿using Albion.Parsers;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Albion.Parsers
 {
     internal class SentenceParser
     {
-        private static Random random = new Random();
-        private static string AnyOf(string[] strs)
-        {
-            return strs[random.Next(strs.Length)];
-        }
+        private static readonly Random random = new Random();
+        private static string AnyOf(string[] strs) => strs[random.Next(strs.Length)];
 
-        private bool m_built;
-        private Action<dynamic> m_action;
-        private Func<dynamic, object> m_func;
+        private readonly bool m_built;
+        private readonly Action<dynamic> m_action;
+        private readonly Func<dynamic, object> m_func;
 
         public Type ReturnType { get; private set; }
         public ParameterInfo[] Parameters { get; private set; }
@@ -39,7 +33,7 @@ namespace Albion.Parsers
             {
                 if (CustomSuggestions == null || CustomSuggestions.Count == 0)
                     return AnyOf(Templates);
-                return string.Join("", CustomSuggestions.Select(x => AnyOf(x)));
+                return string.Join("", CustomSuggestions.Select(AnyOf));
             }
         }
 
@@ -50,7 +44,7 @@ namespace Albion.Parsers
             SentenceLanguage = lang;
             SentenceDescription = descr;
             SentenceID = id;
-            Templates = new string[] { sentence };
+            Templates = new[] { sentence };
 
             Method = info;
             ParametersName = names;
@@ -60,6 +54,8 @@ namespace Albion.Parsers
             CustomSuggestions = suggestions;
             m_built = true;
             m_func = deleg;
+
+            Verify();
         }
 
         internal SentenceParser(List<IParser> tokens, List<string> names, Action<dynamic> deleg, List<string[]> suggestions, string sentence, string lang, string descr, string id)
@@ -69,7 +65,7 @@ namespace Albion.Parsers
             SentenceLanguage = lang;
             SentenceDescription = descr;
             SentenceID = id;
-            Templates = new string[] { sentence };
+            Templates = new[] { sentence };
 
             Method = info;
             ParametersName = names;
@@ -79,6 +75,8 @@ namespace Albion.Parsers
             CustomSuggestions = suggestions;
             m_built = true;
             m_action = deleg;
+
+            Verify();
         }
 
         private SentenceParser(List<IParser> tokens, List<string> names, MethodInfo info, SentenceAttribute attr, List<string[]> suggestions)
@@ -95,6 +93,22 @@ namespace Albion.Parsers
             ReturnType = info.ReturnType;
             CustomSuggestions = suggestions;
             m_built = false;
+
+            Verify();
+        }
+
+        private void Verify()
+        {
+            // This method makes sure we have no chained variables
+            StaticStringParser previous = Tokens[0] as StaticStringParser;
+
+            for (int i = 1; i < Tokens.Count; i++)
+            {
+                if (previous != null)
+                    previous = null;
+                else if ((previous = Tokens[i] as StaticStringParser) == null)
+                    throw new NotSupportedException("Chained variables are not supported.");
+            }
         }
 
         internal int Suggest(string input, bool deep, out Suggestion sugg)
@@ -107,9 +121,10 @@ namespace Albion.Parsers
             if (!deep)
             {
                 IParser token = Tokens.FirstOrDefault();
-                if (token != null && token is StaticStringParser && ((StaticStringParser)token).Reference.StartsWith(test))
+
+                if (token is StaticStringParser stringParser && stringParser.Reference.StartsWith(test))
                 {
-                    string a = ((StaticStringParser)token).Reference.Substring(test.Length);
+                    string a = stringParser.Reference.Substring(test.Length);
 
                     foreach (IParser parser in Tokens.Skip(1))
                         a += parser.RandomExample() + ' ';
@@ -192,7 +207,8 @@ namespace Albion.Parsers
                             {
                                 int del = 0;
 
-                                while ((del = (Tokens[i + 1] as StaticStringParser).MatchLength(test)) == 0 && test.Length > 0)
+                                StaticStringParser staticStringParser = Tokens[i + 1] as StaticStringParser;
+                                while (staticStringParser != null && (del = staticStringParser.MatchLength(test)) == 0 && test.Length > 0)
                                 {
                                     test = test.Substring(1);
                                 }
@@ -202,7 +218,7 @@ namespace Albion.Parsers
                             }
                             else // no support for chained variables
                             {
-                                throw new NotImplementedException("no support for chained variables");
+                                throw new NotSupportedException("no support for chained variables");
                             }
                         }
                         else // during
@@ -226,7 +242,9 @@ namespace Albion.Parsers
                             {
                                 int del = 0;
 
-                                while ((del = (Tokens[i + 1] as StaticStringParser).MatchLength(test)) == 0 && test.Length > 0)
+                                StaticStringParser staticStringParser = Tokens[i + 1] as StaticStringParser;
+
+                                while (staticStringParser != null && (del = staticStringParser.MatchLength(test)) == 0 && test.Length > 0)
                                 {
                                     test = test.Substring(1);
                                 }
@@ -236,7 +254,7 @@ namespace Albion.Parsers
                             }
                             else // no support for chained variables
                             {
-                                throw new NotImplementedException("no support for chained variables yet");
+                                throw new NotSupportedException("no support for chained variables yet");
                             }
                         }
                     }
@@ -258,59 +276,62 @@ namespace Albion.Parsers
         {
             int coeff = 0;
             string test = input;
+            StringBuilder builder = new StringBuilder();
             variables = new Dictionary<int, string>();
 
             for (int i = 0; i < Tokens.Count; i++)
             {
                 IParser token = Tokens[i];
 
-                if (token is StaticStringParser)
+                if (token is StaticStringParser staticParser)
                 {
-                    int del = (token as StaticStringParser).MatchLength(test);
+                    int del = staticParser.MatchLength(test);
 
                     if (del > 0) // we have a static match
-                    {
                         coeff += del;
-                    }
                     else // no static match
-                    {
                         return -1;
-                    }
 
                     test = test.Substring(del);
                 }
-                else
+                else if (Tokens.Count == i + 1) // last token
                 {
-                    if (Tokens.Count == i + 1) // last token
-                    {
-                        variables.Add(i, test);
-                    }
-                    else if (Tokens[i + 1] is StaticStringParser) // following token is a static string
-                    {
-                        string variable = "";
-                        int del = 0;
+                    variables.Add(i, test);
+                    test = "";
+                }
+                else // attempt to find a match till next static parser
+                {
+                    builder.Clear();
+                    int del;
 
-                        while ((del = (Tokens[i + 1] as StaticStringParser).MatchLength(test)) == 0 && test.Length > 0)
-                        {
-                            variable += test[0];
-                            test = test.Substring(1);
-                        }
-
-                        test = test.Substring(del);
-                        variables.Add(i, variable);
-                        i++;
-                    }
-                    else // no support for chained variables yet
+                    StaticStringParser parser = Tokens[i + 1] as StaticStringParser;
+                    while ((del = parser.MatchLength(test)) == 0 && test.Length > 0)
                     {
-                        throw new NotImplementedException("no support for chained variables");
+                        builder.Append(test[0]);
+                        test = test.Substring(1);
                     }
+
+                    test = test.Substring(del);
+                    variables.Add(i, builder.ToString());
+                    i++;
                 }
             }
-            
+
+            if (!string.IsNullOrWhiteSpace(test))
+                // No match till end
+                return -1;
+
             return coeff;
         }
 
-        internal bool TryFinaleParse(Engine en, Dictionary<int, string> vars, out Answer answer)
+        private Answer<T> CreateAnswer<T>(Engine en, MethodInfo method, object target, params object[] args)
+        {
+            return typeof(T) == typeof(object)
+                ? (Answer<T>)(object)new Answer(en, SentenceDescription, SentenceLanguage, SentenceID, method, target, args)
+                : new Answer<T>(en, SentenceDescription, SentenceLanguage, SentenceID, method, target, args);
+        }
+
+        internal bool TryFinaleParse<T>(Engine en, Dictionary<int, string> vars, out Answer<T> answer)
         {
             answer = null;
 
@@ -318,43 +339,43 @@ namespace Albion.Parsers
             {
                 Dictionary<string, object> dic = new Dictionary<string, object>();
 
-                int i = 0;
                 foreach (KeyValuePair<int, string> pair in vars)
                 {
-                    object parameter;
-                    if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
+                    if (Tokens[pair.Key].TryParse(pair.Value, out object parameter))
                         dic[ParametersName[pair.Key]] = parameter;
                     else
                         return false;
-                    i++;
                 }
 
-                answer = m_action == null
-                    ? new Answer(m_func, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID, en)
-                    : new Answer(m_action, new DynamicDictionary(dic), SentenceLanguage, SentenceDescription, SentenceID, en);
+                Delegate @delegate = (Delegate)m_action ?? m_func;
+                answer = CreateAnswer<T>(en, @delegate.GetMethodInfo(), @delegate.Target, new DynamicDictionary(dic));
             }
             else
             {
-                var orderedParameters = new object[Parameters.Length];
+                var orderedArgs = new object[Parameters.Length];
 
                 for (int o = 0; o < Parameters.Length; o++)
                 {
-                    if (Parameters[o].ParameterType == typeof(SentenceAttribute))
+                    ParameterInfo parameter = Parameters[o];
+
+                    if (parameter.ParameterType == typeof(SentenceAttribute))
                     {
-                        orderedParameters[o] = new SentenceAttribute(Templates)
+                        orderedArgs[o] = new SentenceAttribute(Templates)
                         {
                             Description = SentenceDescription,
                             ID = SentenceID,
                             Language = SentenceLanguage
                         };
                     }
+                    else if (parameter.HasDefaultValue)
+                    {
+                        orderedArgs[o] = parameter.DefaultValue;
+                    }
                 }
 
-                int i = 0;
                 foreach (KeyValuePair<int, string> pair in vars)
                 {
-                    object parameter;
-                    if (Tokens[pair.Key].TryParse(pair.Value, out parameter))
+                    if (Tokens[pair.Key].TryParse(pair.Value, out object arg))
                     {
                         int pos = 0;
                         try
@@ -367,24 +388,15 @@ namespace Albion.Parsers
                             throw new Exception($"Expected a parameter named '{ParametersName[pair.Key]}'");
                         }
 
-                        if (parameter == null)
-                        {
-                            if (Parameters[pos].HasDefaultValue)
-                                parameter = Parameters[pos].DefaultValue;
-                            else
-                                throw new ArgumentNullException();
-                        }
-
-                        orderedParameters[pos] = parameter;
+                        orderedArgs[pos] = arg ?? throw new ArgumentNullException();
                     }
                     else
                     {
                         return false;
                     }
-                    i++;
                 }
 
-                answer = new Answer(Method, orderedParameters, SentenceLanguage, SentenceDescription, SentenceID, en);
+                answer = CreateAnswer<T>(en, Method, null, orderedArgs);
             }
             return true;
         }
@@ -417,17 +429,17 @@ namespace Albion.Parsers
             string block = "";
             byte op = 0;
 
-            foreach (char c in s.ToCharArray())
+            foreach (char c in s)
             {
                 if (c == '{')
                 {
                     if (block.Length > 0)
                     {
                         parsers.Add(new StaticStringParser(block));
-                        suggestions.Add(new string[] { block });
+                        suggestions.Add(new[] { block });
                         names.Add(null);
 
-                        block = String.Empty;
+                        block = string.Empty;
                     }
                     op = 1;
                 }
@@ -440,7 +452,7 @@ namespace Albion.Parsers
                     names.Add(block);
 
                     op = 0;
-                    block = String.Empty;
+                    block = string.Empty;
                 }
                 else
                 {
@@ -448,14 +460,14 @@ namespace Albion.Parsers
                 }
             }
 
-            if (!String.IsNullOrWhiteSpace(block))
+            if (!string.IsNullOrWhiteSpace(block))
             {
                 parsers.Add(new StaticStringParser(block));
-                suggestions.Add(new string[] { block });
+                suggestions.Add(new[] { block });
                 names.Add(null);
             }
 
-            return new Tuple<List<IParser>, List<string>, List<string[]>>(parsers, names, suggestions);
+            return Tuple.Create(parsers, names, suggestions);
         }
 
         internal static Tuple<List<IParser>, List<string>, List<string[]>> ParseSentence(string s, ParameterInfo[] parameters)
@@ -467,22 +479,22 @@ namespace Albion.Parsers
             string block = "";
             byte op = 0;
 
-            foreach (char c in s.ToCharArray())
+            foreach (char c in s)
             {
                 if (c == '{')
                 {
                     if (block.Length > 0)
                     {
                         parsers.Add(new StaticStringParser(block));
-                        suggestions.Add(new string[] { block });
+                        suggestions.Add(new[] { block });
                         names.Add(null);
-                        block = String.Empty;
+                        block = string.Empty;
                     }
                     op = 1;
                 }
                 else if (c == '}' && op == 1)
                 {
-                    ParameterInfo para = parameters.FirstOrDefault(y => y.Name.ToLower() == block.ToLower());
+                    ParameterInfo para = parameters.FirstOrDefault(y => string.Equals(y.Name, block, StringComparison.CurrentCultureIgnoreCase));
                     ParserAttribute attr = para.GetCustomAttribute<ParserAttribute>();
 
                     IParser parser = attr?.CustomParser ?? Engine.GetParserForParameter(para.ParameterType);
@@ -491,11 +503,11 @@ namespace Albion.Parsers
                         throw new Exception($"Cannot find a parser for type {para.ParameterType}");
 
                     parsers.Add(parser);
-                    suggestions.Add((attr != null && attr.Examples != null && attr.Examples.Length > 0) ? attr.Examples : parser.Examples.ToArray());
+                    suggestions.Add(attr?.Examples != null && attr.Examples.Length > 0 ? attr.Examples : parser.Examples.ToArray());
                     names.Add(block);
 
                     op = 0;
-                    block = String.Empty;
+                    block = string.Empty;
                 }
                 else
                 {
@@ -503,19 +515,16 @@ namespace Albion.Parsers
                 }
             }
 
-            if (!String.IsNullOrWhiteSpace(block))
+            if (!string.IsNullOrWhiteSpace(block))
             {
                 parsers.Add(new StaticStringParser(block));
-                suggestions.Add(new string[] { block });
+                suggestions.Add(new[] { block });
                 names.Add(null);
             }
 
-            return new Tuple<List<IParser>, List<string>, List<string[]>>(parsers, names, suggestions);
+            return Tuple.Create(parsers, names, suggestions);
         }
 
-        public override string ToString()
-        {
-            return Full;
-        }
+        public override string ToString() => Full;
     }
 }

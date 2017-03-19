@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Albion
 {
     /// <summary>
-    /// Dictionary used as dynamic by the <see cref="SentenceBuilder.Handler(Action{dynamic})"/> method.
+    /// Dictionary used as <see langword="dynamic"/> by the
+    /// <see cref="SentenceBuilder.Handler(Action{object})"/> method.
     /// </summary>
     public class DynamicDictionary : DynamicObject
     {
@@ -29,12 +27,9 @@ namespace Albion
         }
 
         /// <summary>
-        /// Fail to set a value.
+        /// Fails to set a value.
         /// </summary>
         /// <returns>false</returns>
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            return false;
-        }
+        public override bool TrySetMember(SetMemberBinder binder, object value) => false;
     }
 }

@@ -35,21 +35,16 @@ namespace Albion.Tests
         /// Support for Nullables, default values, and multiple sentences!
         /// </summary>
         [Sentence("Remind me to {todo} in {time}", "In {time}, remind me to {todo}", "Remind me to {todo}")]
-        public static string RemindMe(string todo, TimeSpan? time = null)
-        {
-            return time.HasValue
-                ? String.Format("I'll remind you to {0} in {1} minutes", todo, time.Value.TotalMinutes)
-                : String.Format("I'll remind you to {0}", todo);
-        }
+        public static string RemindMe(string todo, TimeSpan? time = null) => time.HasValue
+            ? $"I'll remind you to {todo} in {time.Value.TotalMinutes} minutes"
+            : $"I'll remind you to {todo}";
 
         /// <summary>
         /// Custom parsers!
         /// </summary>
         [Sentence("Order {food}", "Order some {food}")]
         public static string Order([Parser(typeof(StringEnumParser), "eggs?", "tomato(es)?", "bacon")] string food)
-        {
-            return "Alright, we'll buy some " + food + ".";
-        }
+            => $"Alright, we'll buy some {food}.";
 
         /// <summary>
         /// Different priorities: this method matches with *everything*, but is only called if nothing else if found.
@@ -57,8 +52,6 @@ namespace Albion.Tests
         /// </summary>
         [Sentence("{anything}", ID = "annoying")]
         public static string Anything(string anything)
-        {
-            return "No match found";
-        }
+            => "No match found";
     }
 }

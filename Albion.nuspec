@@ -3,7 +3,7 @@
   <metadata>
     <id>Albion</id>
     <title>Albion</title>
-    <version>0.9.9.2</version>
+    <version>0.9.9.4</version>
     <authors>Jee</authors>
     <owners>Jee</owners>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
@@ -12,8 +12,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Extremely easy natural language parsing.</description>
     <summary>Extremely easy natural language parsing.</summary>
-    <releaseNotes>Switched to .NET Standard</releaseNotes>
-    <copyright>Copyright (C) Grégoire GEIS 2016</copyright>
+    <releaseNotes>Fixed many parsing bugs, improved memory usage and performances, made it much more readable.</releaseNotes>
+    <copyright>Copyright (C) Grégoire GEIS 2016-2017</copyright>
     <tags>natural language parsing</tags>
   </metadata>
 </package>

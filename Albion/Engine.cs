@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Albion.Parsers;
 using System.Text.RegularExpressions;
 
@@ -25,21 +24,16 @@ namespace Albion
 
                 foreach (TypeInfo t in target.GetTypeInfo().Assembly.DefinedTypes.Concat(typeInfo.Assembly.DefinedTypes))
                 {
-                    if (!t.IsAbstract
-                        && t.ImplementedInterfaces.Contains(typeof(IParser))
-                        && t.GetCustomAttribute<PhraseParserAttribute>() != null)
-                    {
-                        var constructor = t.DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0);
+                    if (t.IsAbstract || !t.ImplementedInterfaces.Contains(typeof(IParser)) ||
+                        t.GetCustomAttribute<PhraseParserAttribute>() == null)
+                        continue;
 
-                        if (constructor == null)
-                        {
-                            continue;
-                        }
-                        else if (!constructor.ContainsGenericParameters)
-                        {
-                            _parsers.Add((IParser)constructor.Invoke(new object[0]));
-                        }
-                    }
+                    var constructor = t.DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0);
+
+                    if (constructor == null)
+                        continue;
+                    if (!constructor.ContainsGenericParameters)
+                        _parsers.Add((IParser)constructor.Invoke(new object[0]));
                 }
             }
 
@@ -59,6 +53,7 @@ namespace Albion
         /// Creates a new instance of <see cref="Engine"/>, with for <see cref="Language"/> "en".
         /// </summary>
         public Engine() : this("en") { }
+
         /// <summary>
         /// Create a new instance of <see cref="Engine"/>.
         /// </summary>
@@ -72,7 +67,7 @@ namespace Albion
 
         /// <summary>
         /// Initialize a new <see cref="SentenceBuilder"/>, used for generating Sentences on runtime.
-        /// The newly createed <see cref="SentenceBuilder"/> uses the default <see cref="Language"/>.
+        /// The newly created <see cref="SentenceBuilder"/> uses the default <see cref="Language"/>.
         /// </summary>
         public SentenceBuilder Build()
         {
@@ -164,24 +159,18 @@ namespace Albion
         {
             var sentences = new List<Tuple<SentenceParser, int, Dictionary<int, string>>>();
 
-            foreach (SentenceParser sentence in (lang == "*") ? Sentences : Sentences.Where(x => x.SentenceLanguage == lang))
+            foreach (SentenceParser sentence in lang == "*" ? Sentences : Sentences.Where(x => x.SentenceLanguage == lang))
             {
-                Dictionary<int, string> variables = new Dictionary<int, string>();
-                int coeff = sentence.Parse(cleaninput, out variables);
+                int coeff = sentence.Parse(cleaninput, out Dictionary<int, string> variables);
 
                 if (coeff >= 0)
-                {
-                    sentences.Add(new Tuple<SentenceParser, int, Dictionary<int, string>>(sentence, coeff, variables));
-                }
+                    sentences.Add(Tuple.Create(sentence, coeff, variables));
             }
 
             foreach (var sentence in sentences.OrderByDescending(x => x.Item2))
             {
-                Answer answer;
-                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out answer))
-                {
-                    yield return new Answer<T>(answer);
-                }
+                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out Answer<T> answer))
+                    yield return answer;
             }
         }
 
@@ -189,25 +178,18 @@ namespace Albion
         {
             var sentences = new List<Tuple<SentenceParser, int, Dictionary<int, string>>>();
 
-            foreach (SentenceParser sentence in (lang == "*") ? Sentences : Sentences.Where(x => x.SentenceLanguage == lang))
+            foreach (SentenceParser sentence in lang == "*" ? Sentences : Sentences.Where(x => x.SentenceLanguage == lang))
             {
-                Dictionary<int, string> variables = new Dictionary<int, string>();
-                int coeff = sentence.Parse(cleaninput, out variables);
+                int coeff = sentence.Parse(cleaninput, out Dictionary<int, string> variables);
 
                 if (coeff >= 0)
-                {
-                    sentences.Add(new Tuple<SentenceParser, int, Dictionary<int, string>>(sentence, coeff, variables));
-                }
+                    sentences.Add(Tuple.Create(sentence, coeff, variables));
             }
 
             foreach (var sentence in sentences.OrderByDescending(x => x.Item2))
             {
-                Answer answer;
-
-                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out answer))
-                {
-                    yield return answer;
-                }
+                if (sentence.Item1.TryFinaleParse(this, sentence.Item3, out Answer<object> answer))
+                    yield return answer as Answer;
             }
         }
 

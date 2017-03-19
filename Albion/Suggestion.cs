@@ -1,17 +1,15 @@
-﻿using Albion.Parsers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace Albion
 {
+    using Parsers;
+
     /// <summary>
     /// The kind of scan you wish to make.
     /// A scan can be either <see cref="Normal"/> or <see cref="Deep"/>,
     /// but can be any combinaison of <see cref="Sentence"/>, <see cref="Description"/> and <see cref="ID"/>.
     /// </summary>
+    [Flags]
     public enum SuggestionMatchType : byte
     {
         /// <summary>
@@ -40,9 +38,9 @@ namespace Albion
     }
 
     /// <summary>
-    /// 
+    /// Represents a suggestion related to an input to an <see cref="Engine"/>.
     /// </summary>
-    public class Suggestion
+    public sealed class Suggestion
     {
         /// <summary>
         /// The description provided by <see cref="SentenceAttribute.Description"/> or <see cref="SentenceBuilder.Description(string)"/>.
@@ -133,7 +131,7 @@ namespace Albion
         /// </summary>
         public override string ToString()
         {
-            return Converters.Capitalized(Before + Match + After);
+            return string.Concat(Before, Match, After).Capitalized();
         }
     }
 }

@@ -286,6 +286,7 @@ namespace Albion.Parsers
         {
             // some regex should to the trick
             Match match;
+            r = r.Replace('a', '1').Replace("an", "1");
             match = Regex.Match(r, @"(\d+)(?= ?minutes?)", RegexOptions.IgnoreCase);
             int minutes = (match.Success) ? Int32.Parse(match.Value) : 0;
             match = Regex.Match(r, @"(\d+)(?= ?hours?)", RegexOptions.IgnoreCase);

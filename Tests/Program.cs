@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Albion;
 using Shouldly;
-using System.Diagnostics;
 
 namespace Albion.Tests
 {
     class Program
     {
-        static Engine engine = new Engine();
+        static readonly Engine engine = new Engine();
 
         static void Main(string[] args)
         {
             engine.Register(typeof(CustomStaticClass));
             engine.Register(typeof(CustomClass));
 
-            var customObj = new CustomClass() { Name = "John" };
+            var customObj = new CustomClass { Name = "John" };
             customObj.Name = "Greg";
 
             engine.ShouldSatisfyAllConditions(
@@ -34,10 +28,12 @@ namespace Albion.Tests
                 () => engine.Ask("What's her name?").Call(customObj).ShouldBe("Her name is Greg"),
                 () => engine.Ask("What's mine name?").Call(customObj).ShouldBe("No match found"),
 
+                // Suggestions
                 () => engine.Suggest("Order som").ShouldNotBeEmpty(),
 
                 () => engine.Clear(),
 
+                // Builder
                 () => engine.Build()
                             .Sentence("Hello {you}", you => you.IsType<string>())
                             .Handler(o => "Hey, " + o.you),
@@ -45,7 +41,8 @@ namespace Albion.Tests
                 () => engine.Suggest("Hello Gr").ShouldNotBeEmpty(),
 
                 () => engine.Ask<string>("Hello Greg").Call().ShouldBe("Hey, Greg"),
-                () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg")
+                () => engine.Ask("Hello Greg").Call().ShouldBe("Hey, Greg"),
+                () => engine.Ask("Hello").ShouldBeNull()
             );
 
             engine.Clear();

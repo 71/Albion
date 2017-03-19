@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 #pragma warning disable 1591
 
@@ -11,7 +8,7 @@ namespace Albion.Parsers
     [PhraseParser]
     public class TimeSpanParser : TypeParser<TimeSpan>
     {
-        public override int Coeff { get { return 100; } }
+        public override int Coeff => 100;
 
         public override IEnumerable<string> Examples
         {
