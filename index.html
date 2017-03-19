@@ -8,84 +8,93 @@
     <link rel="stylesheet" href="app.css">
     <script src="app.js"></script>
   </head>
-</html>
-<body class="nojs">
-  <script>document.body.classList.remove('nojs');</script>
-  <div id="notice">
-    <p>Sorry, but this website is only available for javascript users. Don't worry, there are no ads nor trackers. Only some fancy animations.</p>
-  </div>
-  <section tabindex="1" class="intro">
-    <h1 class="title"><img src="img/logo.png" class="logo"> Albion</h1>
-    <p>A smarter parser for .NET.</p>
-  </section>
-  <section tabindex="2" class="example">
-    <div class="ex">
-      <input id="exin" type="text" readonly>
+  <body class="nojs">
+    <script>document.body.classList.remove('nojs');</script>
+    <div id="notice">
+      <p>Sorry, but this website is only available for javascript users. Don't worry, there are no ads nor trackers. Only some fancy animations.</p>
     </div>
-  </section>
-  <section tabindex="3" class="tryitout">
-    <h1>WANNA TRY IT OUT?</h1>
-    <table>
-      <tr>
-        <td>
-          <h2>1.</h2>
-        </td>
-        <td>
-          <h3>Define a sentence and a method body</h3>
-        </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td>
-          <input class="name">
-          <pre><code>[<i class="attr">Sentence</i>(<i class="str">"<span class="spaces">    </span> is trying out {what}"</i>)]
+    <section tabindex="1" class="intro">
+      <h1 class="title"><img src="img/logo.png" class="logo"> Albion</h1>
+      <p>A smarter parser for .NET.</p>
+    </section>
+    <section tabindex="2" class="example">
+      <div class="ex">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="strokes">
+                  <circle cx="80%" cy="70%" r="50" stroke="white" fill="none" stroke-width="1" data-length='314.1592653589793' stroke-dasharray="126.41592653589794 187.7433388230814" stroke-dashoffset="14" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="100" stroke="white" fill="none" stroke-width="1" data-length='628.3185307179587' stroke-dasharray="160.83185307179588 467.4866776461628" stroke-dashoffset="240" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="200" stroke="white" fill="none" stroke-width="1" data-length='1256.6370614359173' stroke-dasharray="474.66370614359175 781.9733552923256" stroke-dashoffset="1024" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="300" stroke="white" fill="none" stroke-width="1" data-length='1884.9555921538758' stroke-dasharray="1548.4955592153876 336.4600329384882" stroke-dashoffset="860" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="500" stroke="white" fill="none" stroke-width="1" data-length='3141.592653589793' stroke-dasharray="576.1592653589793 2565.4333882308138" stroke-dashoffset="1905" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="800" stroke="white" fill="none" stroke-width="1" data-length='5026.548245743669' stroke-dasharray="1432.654824574367 3593.893421169302" stroke-dashoffset="47" class="stroke"></circle>
+                  <circle cx="80%" cy="70%" r="1100" stroke="white" fill="none" stroke-width="1" data-length='6911.503837897545' stroke-dasharray="2659.1503837897544 4252.353454107791" stroke-dashoffset="364" class="stroke"></circle>
+        </svg>
+        <input id="exin" type="text" readonly>
+      </div>
+    </section>
+    <section tabindex="3" class="tryitout">
+      <h1>WANNA TRY IT OUT?</h1>
+      <table>
+        <tr>
+          <td>
+            <h2>1.</h2>
+          </td>
+          <td>
+            <h3>Define a sentence and a method body</h3>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <input class="name">
+            <pre><code>[<i class="attr">Sentence</i>(<i class="str">"<span class="spaces">    </span> is trying out {what}"</i>)]
 <i class="keywords">public static void</i> Test(<i class="keywords">string</i> what)
 {
     <i class="keywords">return</i> <i class="str">"You're trying out "</i> <i class="operator">+</i> what;
 }</code></pre>
-          <input class="name">
-          <pre><code>engine.Build(<i class="str">"fr-FR"</i>)
+            <input class="name">
+            <pre><code>engine.Build(<i class="str">"fr-FR"</i>)
       .Sentence(<i class="str">"<span class="spaces">    </span> essaie {quoi}"</i>, quoi <i class="operator">=&gt;</i> quoi.IsType<i class="operator">&lt;</i><i class="keywords">string</i><i class="operator">&gt;</i>())
-      .Handler(o <i class="operator">=&gt;</i> <i class="str">"Tu essaies "</i> <i class="operator">+</i> o.quoi);</code></pre>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <h2>2.</h2>
-        </td>
-        <td>
-          <h3>Enter some input</h3>
-        </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td>
-          <input class="app">
-          <input class="name res">
-          <pre><code>engine.Ask("<span class="spaces">    </span> is trying out <span class="app">Albion</span>"); <i class="comment">// Returns 'You're trying out <span class="app">Albion</span>'</i></code></pre>
-        </td>
-      </tr>
-    </table>
-  </section>
-  <section class="getstarted">
-    <h1>LET'S GET STARTED!</h1>
-    <table>
-      <tr>
-        <td>
-          <h2>1.</h2>
-        </td>
-        <td>
-          <h3>Check out the <a href="https://github.com/idotjee/Albion/wiki" target='_blank'>wiki</a></h3>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <h2>2.</h2>
-        </td>
-        <td>
-          <h3>Check out the <a href="https://github.com/idotjee/Albion" target='_blank'>source code</a></h3>
-        </td>
-      </tr>
-    </table>
-  </section>
-</body>
+      .Handler(o <i class="operator">=&gt;</i> <i class="str">$"Tu essaies {o.quoi}"</i>);</code></pre>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h2>2.</h2>
+          </td>
+          <td>
+            <h3>Enter some input</h3>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <input class="app">
+            <input class="name res">
+            <pre><code>engine.Ask("<span class="spaces">    </span> is trying out <span class="app">Albion</span>"); <i class="comment">// Returns 'You're trying out <span class="app">Albion</span>'</i></code></pre>
+          </td>
+        </tr>
+      </table>
+    </section>
+    <section class="getstarted">
+      <h1>LET'S GET STARTED!</h1>
+      <table>
+        <tr>
+          <td>
+            <h2>1.</h2>
+          </td>
+          <td>
+            <h3>Check out the <a href="https://github.com/6A/Albion/wiki" target='_blank'>wiki</a></h3>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h2>2.</h2>
+          </td>
+          <td>
+            <h3>Check out the <a href="https://github.com/6A/Albion" target='_blank'>source code</a></h3>
+          </td>
+        </tr>
+      </table>
+    </section>
+  </body>
+</html>
