@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Albion</id>
+    <title>Albion</title>
+    <version>0.9.9.4</version>
+    <authors>Jee</authors>
+    <owners>Jee</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>https://github.com/6A/Albion</projectUrl>
+    <language>en-US</language>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Extremely easy natural language parsing.</description>
+    <summary>Extremely easy natural language parsing.</summary>
+    <releaseNotes>Fixed many parsing bugs, improved memory usage and performances, made it much more readable.</releaseNotes>
+    <copyright>Copyright (C) Grégoire GEIS 2016-2017</copyright>
+    <tags>natural language parsing</tags>
+  </metadata>
+</package>

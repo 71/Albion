@@ -1,75 +1,51 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EEFD705F-026A-42AE-BC1F-3F6FEA790BED}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Albion</RootNamespace>
+    <Description>Natural language processing, with Attributes.</Description>
+    <Copyright>Grégoire GEIS © 2016-2017</Copyright>
+    <AssemblyTitle>Albion</AssemblyTitle>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <VersionPrefix>0.9.9.5</VersionPrefix>
+    <Authors>Jee</Authors>
+    <TargetFrameworks>net45;netstandard1.1</TargetFrameworks>
     <AssemblyName>Albion</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+
+    <PackageId>Albion</PackageId>
+    <PackageTags>natural;language;parser;processing</PackageTags>
+    <PackageReleaseNotes>Switched to .NET Core</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/6A/Albion</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/6A/Albion/blob/master/LICENSE</PackageLicenseUrl>
+
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.1' ">1.6.0</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Albion.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Answer.cs" />
-    <Compile Include="Attributes\ParserAttribute.cs" />
-    <Compile Include="Attributes\TypeParserAttribute.cs" />
-    <Compile Include="Attributes\SentenceAttribute.cs" />
-    <Compile Include="DynamicDictionary.cs" />
-    <Compile Include="Engine.cs" />
-    <Compile Include="Parsers\ArrayParser.cs" />
-    <Compile Include="Parsers\Converters\Strings.cs" />
-    <Compile Include="Parsers\DateParser.cs" />
-    <Compile Include="Parsers\Converters\Internal.cs" />
-    <Compile Include="Parsers\IntParser.cs" />
-    <Compile Include="Parsers\IParser.cs" />
-    <Compile Include="Parsers\MatchParser.cs" />
-    <Compile Include="Parsers\StringEnumParser.cs" />
-    <Compile Include="Parsers\TimeSpanParser.cs" />
-    <Compile Include="Parsers\StaticStringParser.cs" />
-    <Compile Include="Parsers\StringParser.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SentenceBuilder.cs" />
-    <Compile Include="SentenceParser.cs" />
-    <Compile Include="Suggestion.cs" />
+
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
+
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+
+
 </Project>
